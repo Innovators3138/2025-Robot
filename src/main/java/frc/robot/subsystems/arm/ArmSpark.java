@@ -14,12 +14,13 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 import frc.robot.utils.PIDFConfig;
 
-public class ArmSpark {
+public class ArmSpark implements ArmIO{
 
     private static final int maximumRetries = 5;
     private SparkBaseConfig cfg;
@@ -122,17 +123,21 @@ public class ArmSpark {
         motor.set(percentOutput);
     }
 
-    public void setReference(double setpoint, double feedforward)
-    {
-        configureSpark(() -> pid.setReference(setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward));
+    public void setReference(double position, double feedforward)
+            {
+                configureSpark(() -> pid.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward));
     }
 
-    public void setReference(double setpoint, double feedforward, double position)
+    public void setReference(double setpoint, double feedforward, Angle position)
     {
-        setReference(setpoint, feedforward);
-    }
-
-    public double getVoltage()
+        setReference(position, feedforward);
+            }
+        
+            void setReference(Angle position, double feedforward) {
+                throw new UnsupportedOperationException("Unimplemented method 'setReference'");
+            }
+        
+            public double getVoltage()
     {
         return motor.getAppliedOutput() * motor.getBusVoltage();
     }
@@ -146,5 +151,29 @@ public class ArmSpark {
     {
         return motor.getAppliedOutput();
     }
+
+    public double getOutputCurrent()
+    {
+        return motor.getOutputCurrent();
+    }
+
+    public double getMotorTemperature()
+    {
+        return motor.getMotorTemperature();
+    }
+
+    public void updateInputs(ArmIOInputs inputs, ArmSpark shoulderMotor, ArmSpark wristMotor, ArmEncoder shoulderEncoder, ArmEncoder wristEncoder) {
+        inputs.shoulderPositionRad = shoulderEncoder.getPosition().in(Radians);
+        inputs.wristPositionRad = wristEncoder.getPosition().in(Radians);
+        inputs.shoulderVelocityRadPerSec = shoulderEncoder.getVelocity().in(RadiansPerSecond);
+        inputs.wristVelocityRadPerSec = wristEncoder.getVelocity().in(RadiansPerSecond);  
+        inputs.shoulderAppliedVolts = shoulderMotor.getVoltage();
+        inputs.wristAppliedVolts = wristMotor.getVoltage();
+        inputs.shoulderSupplyCurrentAmps = shoulderMotor.getOutputCurrent();
+        inputs.wristSupplyCurrentAmps = wristMotor.getOutputCurrent();
+        inputs.shoulderTempCelsius = shoulderMotor.getMotorTemperature();
+        inputs.wristTempCelsius = wristMotor.getMotorTemperature();
+    }
+
 }
 

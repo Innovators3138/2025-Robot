@@ -31,6 +31,7 @@
 | high_pressure_transducer | AnalogInput | 0-3 | 0 |
 | working_pressure_transducer | AnalogInput | 0-3 | 1 |
 
+
 ### Digital Input ###
 | Device | Class | Range | ID |
 |:-|:-:|:-:|:-:|

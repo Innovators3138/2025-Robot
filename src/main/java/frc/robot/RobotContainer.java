@@ -27,6 +27,9 @@ import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.GripperSubsystem;
 
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
+
 import java.io.File;
 import swervelib.SwerveInputStream;
 
@@ -41,13 +44,13 @@ public class RobotContainer
 {
  
  
-  GripperSubsystem m_GrabberSubsystem = new GripperSubsystem();
+  GripperSubsystem m_GripperSubsystem = new GripperSubsystem();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController driverXbox = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
-
+  private final Arm arm = new Arm();
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
@@ -136,12 +139,10 @@ public class RobotContainer
 
     if (RobotBase.isSimulation())
     {
-      drivebase.setDefaultCommand(driveDirectAngleKeyboard);
-    } else
-    {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     }
 
+    driverXbox.x().whileTrue(drivebase.sysIdAngleMotorCommand());
     if (Robot.isSimulation())
     {
       driverXbox.start().onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
@@ -169,12 +170,21 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       //driverXbox.leftBumper().onTrue(new CloseIntake(m_intakeSubsystem).andThen(new DeactivateIntake(m_intakeSubsystem)));
+<<<<<<< HEAD
       driverXbox.leftBumper().onTrue(Commands.runOnce(m_GrabberSubsystem::stopIntake));
       driverXbox.rightBumper().onTrue(Commands.runOnce(m_elevator::raiseElevator));
       driverXbox.axisGreaterThan(2,0.9).onTrue(Commands.runOnce(m_GrabberSubsystem::startIntake));
       driverXbox.axisGreaterThan(3,0.9).onTrue(Commands.run(m_elevator::lowerElevator));
     }               
                                       
+=======
+      driverXbox.leftBumper().onTrue(Commands.runOnce(m_GripperSubsystem::stopIntake));
+      driverXbox.rightBumper().onTrue(Commands.run(m_elevator::raiseElevator));
+      driverXbox.axisGreaterThan(2,0.9).onTrue(Commands.runOnce(m_GripperSubsystem::startIntake).andThen(Commands.print("motor has started")));
+      driverXbox.rightTrigger().onTrue(Commands.run(m_elevator::lowerElevator));
+    }
+
+>>>>>>> f2f8dd251490fc1c583e5f277669982908fa0d36
   }
 
   /**

@@ -39,6 +39,14 @@ public final class Constants
     REPLAY
   }
 
+  public static enum Level {
+    STOWED,
+    LEVEL_1,
+    LEVEL_2,
+    LEVEL_3,
+    LEVEL_4
+  }
+
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
@@ -79,11 +87,11 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
   public static final class ArmConstants
   {
-    public static final double ARM_S1_ANGLES[] = {30.0, 30.0};
-    public static final double ARM_S2_ANGLES[] = {30.0, 30.0};
-    public static final double ARM_S3_ANGLES[] = {30.0, 30.0};
-    public static final double ARM_S4_ANGLES[] = {30.0, 30.0};
-    public static final double ARM_S5_ANGLES[] = {-150.0, 0.0};
+    public static final Angle ARM_L1_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
+    public static final Angle ARM_L2_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
+    public static final Angle ARM_L3_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
+    public static final Angle ARM_L4_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
+    public static final Angle ARM_STOWED_ANGLES[] = {Degrees.of(-150.0), Degrees.of(30.0)};
 
     public static final int SHOULDER_ENCODER_SIGNAL = 1;
     public static final int WRIST_ENCODER_SIGNAL = 2;
@@ -129,6 +137,20 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final boolean SHOULDER_MOTOR_IS_INVERTED = false;
     public static final boolean WRIST_MOTOR_IS_INVERTED =  false;
 
+    public static final Angle SHOULDER_SAFE_STOWED_RANGE[] = {Degrees.of(0), Degrees.of(1)};
+
+  }
+
+  public static final class ElevatorConstants {
+    public static final Distance MINIMUM_SAFE_HEIGHT = Inches.of(0.5);
+    public static final Distance MINIMUM_SHOULDER_MOVE_SAFE_HEIGHT = Inches.of(10.0); 
+    public static final Distance MAXIMUM_SAFE_HEIGHT = Inches.of(27.0);
+
+    public static final Distance ELEVATOR_L1_HEIGHT = Inches.of(0.0);
+    public static final Distance ELEVATOR_L2_HEIGHT = Inches.of(10.0);
+    public static final Distance ELEVATOR_L3_HEIGHT = Inches.of(16.0);
+    public static final Distance ELEVATOR_L4_HEIGHT = Inches.of(25.0);
+    public static final Distance ELEVATOR_STOWED_HEIGHT = Inches.of(0.0);
     public static final double SHOULDER_MAX_VELOCITY_DEG_PER_SEC = 100.0;
   }
 

@@ -22,8 +22,8 @@ import frc.robot.utils.PIDFConfig;
 import frc.robot.math.ArmMath;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.subsystems.elevator.*;
 
-import frc.robot.subsystems.arm.ArmSpark;
 
 public class Arm extends SubsystemBase {
     private SparkBaseConfig wristcfg = new SparkFlexConfig();
@@ -49,6 +49,7 @@ public class Arm extends SubsystemBase {
     private final DoublePublisher rawWristVelocityPublisher;
 
     public Arm() {
+
 
         m_shoulderMotor = new ArmSpark(new SparkFlex(18, MotorType.kBrushless), shouldercfg, DCMotor.getNeoVortex(1));
         m_wristMotor = new ArmSpark(new SparkMax(19, MotorType.kBrushless), wristcfg, DCMotor.getNEO(1));
