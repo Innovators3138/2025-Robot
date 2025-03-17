@@ -189,10 +189,10 @@ public class RobotContainer
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
       //operatorXbox.y().onTrue(new MoveShoulder(arm, Rotations.of(-0.171)).repeatedly().andThen(new MoveWrist(arm, Rotations.of(0.112)).repeatedly()));
-      operatorXbox.b().onTrue(new MoveShoulder(arm, ArmConstants.ARM_INTAKE_ANGLES[0]).repeatedly());
-      operatorXbox.a().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L1_ANGLES[0]).repeatedly());
-      operatorXbox.x().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L2_ANGLES[0]).repeatedly());
-      operatorXbox.y().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L3_ANGLES[0]).repeatedly());
+      operatorXbox.b().onTrue(new MoveShoulder(arm, ArmConstants.ARM_INTAKE_ANGLES[0]));
+      operatorXbox.a().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L1_ANGLES[0]));
+      operatorXbox.x().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L2_ANGLES[0]));
+      operatorXbox.y().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L3_ANGLES[0]));
       
       //operatorXbox.x().onTrue(new MoveWrist(arm, Rotations.of(0.112)).repeatedly());
       //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
