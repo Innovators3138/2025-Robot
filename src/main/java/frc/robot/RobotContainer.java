@@ -211,6 +211,7 @@ public class RobotContainer
       //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
       //operatorXbox.y().onTrue(new RunGripper(m_GripperSubsystem, 0.3 ).repeatedly());
       m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));
+      m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
       //operatorXbox.leftBumper().onTrue(new RunGripper(m_GripperSubsystem, 0.1).repeatedly());
       //operatorXbox.rightBumper().onTrue(new RunGripper(m_GripperSubsystem, 1).repeatedly());
       //operatorXbox.leftBumper().onFalse(new RunGripper(m_GripperSubsystem, 0.0).repeatedly());
