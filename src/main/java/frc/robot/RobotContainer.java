@@ -224,7 +224,21 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       //driverXbox.leftBumper().onTrue(new CloseIntake(m_intakeSubsystem).andThen(new DeactivateIntake(m_intakeSubsystem)));
+
+      driverXbox.leftBumper().onTrue(Commands.runOnce(m_GrabberSubsystem::stopIntake));
+      driverXbox.rightBumper().onTrue(Commands.runOnce(m_elevator::raiseElevator));
+      driverXbox.axisGreaterThan(2,0.9).onTrue(Commands.runOnce(m_GrabberSubsystem::startIntake));
+      driverXbox.axisGreaterThan(3,0.9).onTrue(Commands.run(m_elevator::lowerElevator));
+    }               
+                                      
+
+      driverXbox.leftBumper().onTrue(Commands.runOnce(m_GripperSubsystem::stopIntake));
+      driverXbox.rightBumper().onTrue(Commands.run(m_elevator::raiseElevator));
+      driverXbox.axisGreaterThan(2,0.9).onTrue(Commands.runOnce(m_GripperSubsystem::startIntake).andThen(Commands.print("motor has started")));
+      driverXbox.rightTrigger().onTrue(Commands.run(m_elevator::lowerElevator));
+
     }
+
 
   }
 
