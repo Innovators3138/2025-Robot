@@ -106,6 +106,9 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final boolean SHOULDER_ENCODER_IS_INVERTED = true;
     public static final boolean WRIST_ENCODER_IS_INVERTED = false;
 
+    public static final AngularVelocity SHOULDER_IDLE_SPEED_REQUIRED = RotationsPerSecond.of(0.02);
+    public static final AngularVelocity WRIST_IDLE_SPEED_REQUIRED = RotationsPerSecond.of(0.02);
+
     public static final double WRIST_MAX_ROTATION = 0.650;
 
     public static final double SHOULDER_P = 12;//20.0;
@@ -178,11 +181,15 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
   public static final Distance ELEVATOR_DRUM_DIAMETER = Inches.of(1.432);
   public static final Distance ELEVATOR_CONVERSION_FACTOR = ELEVATOR_DRUM_DIAMETER.times(Math.PI * 64.0 / 24.0 * 64.0 / 24.0); // Distance per Magnet Rotation
   public static final Distance ELEVATOR_THRESHOLD = Inches.of(0.125);
+
+  
   
   }
 
   public static final class GripperConstants {
     public static final double LIGHT_SENSOR_THRESHOLD = 0.55; // 0.55 volts
     public static final double GRIPPER_VOLTAGE_COEFFICIENT = 0.5484375;
+    public static final double GRIPPER_INTAKE_SPEED = 0.5;
+    public static final double TRIGGER_DEADZONE = 0.05;
   }
 }

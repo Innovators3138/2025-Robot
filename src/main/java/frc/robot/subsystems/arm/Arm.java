@@ -188,6 +188,9 @@ public class Arm extends SubsystemBase {
         m_wristMotor.setVoltage(voltage);
     }
 
+    public boolean wristAtSetPoint() { return wristController.atSetpoint(); }
+    public boolean shoulderAtSetPoint() { return shoulderController.atSetpoint(); }
+
     public Angle getShoulderPosition() {
         double position = m_shoulderEncoder.getPosition().in(Rotations) * ArmConstants.SHOULDER_CONVERSION_FACTOR;
         return Rotations.of(position);
@@ -195,6 +198,14 @@ public class Arm extends SubsystemBase {
 
     public AngularVelocity getShoulderVelocity() {
         return RotationsPerSecond.of(m_shoulderEncoder.getVelocity().in(RotationsPerSecond) * ArmConstants.SHOULDER_CONVERSION_FACTOR);
+    }
+
+    public void stopAllMotionAndClearPIDInfo()
+    {
+        shoulderController.reset();
+        wristController.reset();
+        m_shoulderMotor.setVoltage(0);
+        m_wristMotor.setVoltage(0);
     }
 
     public void setShoulderPosition(Angle setpoint) {
@@ -227,7 +238,7 @@ public class Arm extends SubsystemBase {
             voltage = -1 * voltage;
         }
 
-        if (getShoulderPosition().in(Rotations) < 0.05 && getShoulderPosition().in(Rotations) > -0.46) {
+        if (getShoulderPosition().in(Rotations) < 0.05 && getShoulderPosition().in(Rotations) > -0.475) {
             if (!shoulderAtSetpoint) {
                 //leave voltage alone
             } else {

@@ -200,13 +200,14 @@ public class RobotContainer
       //operatorXbox.x().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_L2_ANGLES[0], ArmConstants.ARM_L2_ANGLES[1]).repeatedly());
       //operatorXbox.y().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_L3_ANGLES[0], ArmConstants.ARM_L3_ANGLES[1]).repeatedly());
 
-      operatorXbox.x().onTrue(new SetToLevelOne(m_elevator, m_arm).repeatedly());
-      operatorXbox.a().onTrue(new SetToLevelTwo(m_elevator, m_arm).repeatedly());
-      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm).repeatedly());
-      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm).repeatedly());
+      operatorXbox.x().onTrue(new SetToLevelOne(m_elevator, m_arm));
+      operatorXbox.a().onTrue(new SetToLevelTwo(m_elevator, m_arm));
+      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm));
+      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm));
 
-      operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).repeatedly());
-      
+      //operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).andThen(new WaitCommand(0.5)).andThen(new SetToLevelOne(m_elevator, m_arm)));
+      operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake
+
       //operatorXbox.x().onTrue(new MoveWrist(arm, Rotations.of(0.112)).repeatedly());
       //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
       //operatorXbox.y().onTrue(new RunGripper(m_GripperSubsystem, 0.3 ).repeatedly());

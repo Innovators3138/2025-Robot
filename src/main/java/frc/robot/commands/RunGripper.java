@@ -10,13 +10,6 @@ import frc.robot.Constants.GripperConstants;
 public class RunGripper extends Command {
     private final GripperSubsystem m_GripperSubsystem;
     private CommandXboxController m_controller;
-    boolean finished;
-
-
-    public void setIntakeFromTrigger(CommandXboxController controller)
-        {
-            
-        }
 
     public RunGripper(GripperSubsystem gripperSubsystem, CommandXboxController controller) {
         m_GripperSubsystem = gripperSubsystem;
@@ -24,21 +17,24 @@ public class RunGripper extends Command {
         addRequirements(m_GripperSubsystem);
     }
     @Override
-    public void initialize() {
+    public void initialize() 
+    {
+        m_GripperSubsystem.setIntakeSpeed(0.0);
     }
 
     @Override
     public void execute() {
-        //System.out.println(m_controller.getLeftTriggerAxis());
-        //m_GripperSubsystem.setIntakeSpeed(setpoint);
 
-        if (m_controller.getLeftTriggerAxis() >= 0.05 && m_controller.getRightTriggerAxis() < 0.05)
+        if ((m_controller.getLeftTriggerAxis() >= GripperConstants.TRIGGER_DEADZONE) && 
+            (m_controller.getRightTriggerAxis() < GripperConstants.TRIGGER_DEADZONE))
         { 
+            //Use left trigger
             m_GripperSubsystem.setIntakeSpeed(GripperConstants.GRIPPER_VOLTAGE_COEFFICIENT * m_controller.getLeftTriggerAxis());
         }
-        
-        else if (m_controller.getLeftTriggerAxis() < 0.05 && m_controller.getRightTriggerAxis() >= 0.05)
+        else if ((m_controller.getLeftTriggerAxis() < GripperConstants.TRIGGER_DEADZONE) && 
+                 (m_controller.getRightTriggerAxis() >= GripperConstants.TRIGGER_DEADZONE))
         {
+            //use right trigger
             m_GripperSubsystem.setIntakeSpeed((GripperConstants.GRIPPER_VOLTAGE_COEFFICIENT * m_controller.getRightTriggerAxis()) * -1);
         }
         else
@@ -48,10 +44,13 @@ public class RunGripper extends Command {
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) 
+    {
+        m_GripperSubsystem.setIntakeSpeed(0.0);
+    }
 
     @Override
     public boolean isFinished() {
-        return true;
+        return false; //run forever unless interrupted
     }
 }
