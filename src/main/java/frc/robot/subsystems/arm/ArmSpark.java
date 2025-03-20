@@ -26,6 +26,7 @@ public class ArmSpark implements ArmIO{
     private SparkBaseConfig cfg;
     private final SparkBase motor;
     public SparkClosedLoopController pid;
+    private double m_lastSetVoltage = 0.0;
 
     public ArmSpark(SparkBase motor, SparkBaseConfig cfg, DCMotor motorType)
     {
@@ -137,7 +138,7 @@ public class ArmSpark implements ArmIO{
                 throw new UnsupportedOperationException("Unimplemented method 'setReference'");
             }
         
-            public double getVoltage()
+    public double getVoltage()
     {
         return motor.getAppliedOutput() * motor.getBusVoltage();
     }
@@ -145,6 +146,12 @@ public class ArmSpark implements ArmIO{
     public void setVoltage(double voltage)
     {
         motor.setVoltage(voltage);
+        m_lastSetVoltage = voltage;
+    }
+
+    public double getLastSetVoltage()
+    {
+        return m_lastSetVoltage;
     }
 
     public double getAppliedOutput()

@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import edu.wpi.first.math.controller.PIDController;
 
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -30,6 +30,8 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.*;
 import frc.robot.math.ElevatorMath;
 import frc.robot.Constants;
@@ -55,6 +57,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     private ElevatorFeedforward elevatorFeedforward;
     public final Cache<Distance> elevatorPositionCache;
     public final Cache<LinearVelocity> elevatorVelocityCache;
+    private  Distance elevatorSetpoint = Meters.of(0);
+    private  Distance elevatorError = Meters.of(0);
+    private final DoublePublisher rawElevatorPositionPublisher;
+    private final DoublePublisher rawElevatorVelocityPublisher;
+    private final DoublePublisher rawElevatorSetpointPublisher;
+    private final DoublePublisher rawElevatorErrorPublisher;
+    private final DoublePublisher rawElevatorVoltage;
+    public boolean atSetpoint = false;
+
+    PIDController m_pidController;
+        
 
 
     public ElevatorSubsystem(CANdi elevatorCANdi) {
@@ -74,6 +87,11 @@ public class ElevatorSubsystem extends SubsystemBase {
                                             ElevatorConstants.ELEVATOR_IZ
                                             );
 
+        m_pidController = new PIDController(ElevatorConstants.ELEVATOR_P, ElevatorConstants.ELEVATOR_I, ElevatorConstants.ELEVATOR_D);                                    
+        m_pidController.setTolerance(0.005);
+        m_pidController.setIZone(ElevatorConstants.ELEVATOR_IZ);
+
+
         m_elevatorMotor.setVoltageCompensation(Constants.NOMINAL_VOLTAGE);
         m_elevatorMotor.setCurrentLimit(ArmConstants.SHOULDER_MOTOR_CURRENT_LIMIT);
         m_elevatorMotor.setLoopRampRate(ArmConstants.SHOULDER_MOTOR_RAMP_RATE);
@@ -89,17 +107,57 @@ public class ElevatorSubsystem extends SubsystemBase {
         // elevatorEncoder.setPositionConversionFactor(Double.parseDouble(ElevatorConstants.METERS_PER_REVOLUTION));
         // dividing by 60 to convert meters per minute to meters per second
         // elevatorEncoder.setVelocityConversionFactor(Double.parseDouble(ElevatorConstants.METERS_PER_REVOLUTION));
+
+        rawElevatorPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Raw Absolute Encoder Position").publish();
+        rawElevatorVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Raw Absolute Encoder Velocity").publish();
+        rawElevatorSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Setpoint").publish();
+        rawElevatorErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Error").publish();
+        rawElevatorVoltage = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Voltage").publish();
+
+
     }
 
     public Distance getElevatorPosition() {
-        return Meters.of(m_elevatorEncoder.getPosition().in(Rotations) * ElevatorConstants.ELEVATOR_CONVERSION_FACTOR.in(Meters));
+        double position = m_elevatorEncoder.getPosition().in(Rotations);
+        return Meters.of(position * ElevatorConstants.ELEVATOR_CONVERSION_FACTOR.in(Meters));
     }
     public LinearVelocity getElevatorVelocity() {
         return MetersPerSecond.of(m_elevatorEncoder.getVelocity().in(RotationsPerSecond) * ElevatorConstants.ELEVATOR_CONVERSION_FACTOR.in(Meters));
     }
 
+    public void stopAllMotionAndClearPIDInfo()
+    {
+        m_pidController.reset();
+        m_elevatorMotor.setVoltage(0);
+    }
+
+    public boolean atSetPoint() { return m_pidController.atSetpoint(); }
+
     public void setElevatorPosition(Distance setpoint) {
-        m_elevatorMotor.setReference(setpoint.in(Meters), elevatorFeedforward.calculate(0.0));
+        Distance position = getElevatorPosition();
+        this.elevatorSetpoint = setpoint;
+        this.elevatorError = position.minus(setpoint);
+
+        
+        if (m_pidController.atSetpoint()) {
+            atSetpoint = true;
+        } else {
+            atSetpoint = false;
+        }
+        double voltage = m_pidController.calculate(getElevatorPosition().in(Meters), setpoint.in(Meters)) + 0.3;
+        if (Constants.ElevatorConstants.ELEVATOR_MOTOR_IS_INVERTED) {
+            voltage = -1 * voltage;
+        }
+
+        //System.out.println("Elevator voltage to set = " + voltage + ", elevator pos in meters: " + getElevatorPosition().in(Meters));
+
+        if (getElevatorPosition().in(Meters) < (ElevatorConstants.ELEVATOR_MAX_HEIGHT.in(Meters) - 0.01)) {
+            m_elevatorMotor.setVoltage(voltage);
+        }
+        else {
+            m_elevatorMotor.setVoltage(0);
+        }
+        //m_elevatorMotor.setReference(setpoint.in(Meters), elevatorFeedforward.calculate(0.0));
     }
 
     public double getElevatorCurrent() {
@@ -109,24 +167,20 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_elevatorMotor.getMotorTemperature();
        //martDashboard.putNumber("elevator/ real motor tempc (C)",m_elevatorMotor.getMotorTemperature());
     }
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-       //eriodicUpdate();
-    }
-    
-    public void raiseElevator(){
-        m_elevatorMotor.set(1.0);
-        if (m_elevatorEncoder.getPosition().in(Rotations) >= 0.75) {
-            m_elevatorMotor.set(0.0);
-        }
-    }
-            public void lowerElevator(){
-            m_elevatorMotor.set(-1.0);
-            if (m_elevatorEncoder.getPosition().in(Rotations) <= 0.0){
-                m_elevatorMotor.set(0.0);
-            }
-        }
+
+    public void updateTelemetry()
+    {
+        rawElevatorPositionPublisher.set(getElevatorPosition().in(Meters));
+        rawElevatorVelocityPublisher.set(m_elevatorEncoder.getVelocity().in(RotationsPerSecond) * ElevatorConstants.ELEVATOR_CONVERSION_FACTOR.in(Meters));
+        rawElevatorSetpointPublisher.set(elevatorSetpoint.in(Meters));
+        rawElevatorErrorPublisher.set(elevatorError.in(Meters));
+        rawElevatorVoltage.set(m_elevatorMotor.getVoltage());
     }
 
+    public void periodic()
+    {
+        updateTelemetry();
+    }
+
+}
 

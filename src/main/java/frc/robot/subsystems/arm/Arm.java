@@ -8,6 +8,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+
 
 import com.ctre.phoenix6.hardware.CANdi;
 import com.revrobotics.spark.SparkMax;
@@ -22,12 +24,11 @@ import frc.robot.utils.PIDFConfig;
 import frc.robot.math.ArmMath;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.subsystems.elevator.*;
 
 
 public class Arm extends SubsystemBase {
-    private SparkBaseConfig wristcfg = new SparkFlexConfig();
-    private SparkBaseConfig shouldercfg = new SparkMaxConfig();
+    private SparkBaseConfig wristcfg = new SparkMaxConfig();
+    private SparkBaseConfig shouldercfg = new SparkFlexConfig();
     private final ArmSpark m_shoulderMotor;
     private final ArmSpark m_wristMotor;
     private final CANdi m_armCANdi;
@@ -42,23 +43,49 @@ public class Arm extends SubsystemBase {
     public final PIDFConfig wristPIDFConfig;
     private ArmFeedforward shoulderFeedforward;
     private ArmFeedforward wristFeedforward;
+    private Angle wristSetpoint = Rotations.of(0);
+    private Angle shoulderSetpoint = Rotations.of(0);
+    private Angle wristError = Rotations.of(0);
+    private Angle shoulderError = Rotations.of(0);
 
     private final DoublePublisher rawShoulderPositionPublisher;
     private final DoublePublisher rawShoulderVelocityPublisher;
+    private final DoublePublisher rawShoulderSetpointPublisher;
+    private final DoublePublisher rawShoulderErrorPublisher;
+    private final DoublePublisher rawShoulderDerivativePublisher;
+    private final DoublePublisher rawShoulderVoltagePublisher;
+    private final DoublePublisher rawShoulderFeedforwardPublisher;
+    private final DoublePublisher shoulderErrorAccumulation;
     private final DoublePublisher rawWristPositionPublisher;
     private final DoublePublisher rawWristVelocityPublisher;
+    private final DoublePublisher rawWristSetpointPublisher;
+    private final DoublePublisher rawWristErrorPublisher;
+    private final DoublePublisher rawWristVoltagePublisher;
+    public boolean wristAtSetpoint = false;
+    public boolean shoulderAtSetpoint = false;
+    private double shoulderFeedforwardVoltage = 0.0;
+    private double shoulderAccumulatedError = 0.0;
+    private double m_shoulderErrorDerivative = 0.0;
+    private final PIDController wristController;
+    private final PIDController shoulderController;
 
-    public Arm() {
+    public Arm(CANdi armCANDi) {
 
 
         m_shoulderMotor = new ArmSpark(new SparkFlex(18, MotorType.kBrushless), shouldercfg, DCMotor.getNeoVortex(1));
-        m_wristMotor = new ArmSpark(new SparkMax(19, MotorType.kBrushless), wristcfg, DCMotor.getNEO(1));
-        m_armCANdi = new CANdi(34);
+        m_wristMotor = new ArmSpark(new SparkMax(19, MotorType.kBrushless), wristcfg, DCMotor.getNeo550(1));
+        m_armCANdi = armCANDi;
         m_armCANdi.clearStickyFaults();
+        
         m_shoulderEncoder = new ArmEncoder(m_armCANdi, ArmConstants.SHOULDER_ENCODER_SIGNAL); 
         m_wristEncoder = new ArmEncoder(m_armCANdi, ArmConstants.WRIST_ENCODER_SIGNAL);
         m_shoulderEncoder.configCandi();
         m_wristEncoder.configCandi();
+        shoulderFeedforward = ArmMath.createShoulderFeedforward();
+        
+        
+
+        
 
         shoulderPIDFConfig = new PIDFConfig(ArmConstants.SHOULDER_P,
                                             ArmConstants.SHOULDER_I,
@@ -73,8 +100,6 @@ public class Arm extends SubsystemBase {
                                             ArmConstants.WRIST_IZ
                                             );
 
-        shoulderFeedforward = getDefaultShoulderFeedForward();
-        wristFeedforward = getDefaultWristFeedForward();
 
         m_shoulderMotor.setVoltageCompensation(Constants.NOMINAL_VOLTAGE);
         m_shoulderMotor.setCurrentLimit(ArmConstants.SHOULDER_MOTOR_CURRENT_LIMIT);
@@ -108,19 +133,150 @@ public class Arm extends SubsystemBase {
 
         rawShoulderPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Position").publish();
         rawShoulderVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Velocity").publish();
+        rawShoulderSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Position Setpoint").publish();
+        rawShoulderErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Position Error").publish();
+        rawShoulderDerivativePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw position derivative error").publish();
+        rawShoulderVoltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Voltage").publish();
+        rawShoulderFeedforwardPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Feedforward Voltage").publish();
         rawWristPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Absolute Encoder Position").publish();
         rawWristVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Absolute Encoder Velocity").publish();
-    
-        
+        rawWristSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Position Setpoint").publish();
+        rawWristErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Position Error").publish();
+        rawWristVoltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Voltage").publish();
+        shoulderErrorAccumulation = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Shoulder Accumulated Error").publish();
 
+        shoulderFeedforwardVoltage = shoulderFeedforward.calculate((getShoulderPosition()).in(Radians), getShoulderVelocity().in(RadiansPerSecond));
+        
+        wristController = new PIDController(ArmConstants.WRIST_P, ArmConstants.WRIST_I, ArmConstants.WRIST_D);
+        wristController.setTolerance(0.005);
+        wristController.setIZone(ArmConstants.WRIST_IZ);
+        shoulderController = new PIDController(ArmConstants.SHOULDER_P, ArmConstants.SHOULDER_I, ArmConstants.SHOULDER_D);
+        shoulderController.setTolerance(0.005);
+        shoulderController.setIZone(ArmConstants.SHOULDER_IZ);
+
+    }
+    public Angle getWristPosition() {
+        double position = m_wristEncoder.getPosition().in(Rotations);
+        return Rotations.of(position);
+    }
+
+    public AngularVelocity getWristVelocity() {
+        return RotationsPerSecond.of(m_wristEncoder.getVelocity().in(RotationsPerSecond));
+    }
+
+    public void setWristPosition(Angle setpoint) {
+        Angle position = getWristPosition();
+
+        if (wristSetpoint != setpoint)
+        {
+            System.out.println("Changing wrist setpoint to " + setpoint.in(Rotations));
+            this.wristSetpoint = setpoint;
+        }
+        this.wristError = position.minus(setpoint);
+
+        
+        if (wristController.atSetpoint()) {
+            wristAtSetpoint = true;
+        } else {
+            wristAtSetpoint = false;
+        }
+        double voltage = wristController.calculate(getWristPosition().in(Rotations), setpoint.in(Rotations));
+        if (Constants.ArmConstants.WRIST_MOTOR_IS_INVERTED) {
+            voltage = -1 * voltage;
+        }
+ 
+        m_wristMotor.setVoltage(voltage);
+    }
+
+    public boolean wristAtSetPoint() { return wristController.atSetpoint(); }
+    public boolean shoulderAtSetPoint() { return shoulderController.atSetpoint(); }
+
+    public Angle getShoulderPosition() {
+        double position = m_shoulderEncoder.getPosition().in(Rotations) * ArmConstants.SHOULDER_CONVERSION_FACTOR;
+        return Rotations.of(position);
+    }
+
+    public AngularVelocity getShoulderVelocity() {
+        return RotationsPerSecond.of(m_shoulderEncoder.getVelocity().in(RotationsPerSecond) * ArmConstants.SHOULDER_CONVERSION_FACTOR);
+    }
+
+    public void stopAllMotionAndClearPIDInfo()
+    {
+        shoulderController.reset();
+        wristController.reset();
+        m_shoulderMotor.setVoltage(0);
+        m_wristMotor.setVoltage(0);
+    }
+
+    public void setShoulderPosition(Angle setpoint) {
+        Angle position = getShoulderPosition();
+        shoulderFeedforwardVoltage = shoulderFeedforward.calculate((position).in(Radians) + Math.PI / 2, getShoulderVelocity().in(RadiansPerSecond));
+        this.shoulderError = position.minus(setpoint);  //TODO should we just use shoulderController.getError()?
+
+        if (setpoint != this.shoulderSetpoint)
+        {
+            this.shoulderSetpoint = setpoint; 
+        
+            System.out.println("Setting shoulder position setpoint " + setpoint + ", shoulder feed forward voltage: " + shoulderFeedforwardVoltage + ", current shoulder position is " + getShoulderPosition().in(Rotations));
+        }
+
+        
+        
+        m_shoulderErrorDerivative = shoulderController.getErrorDerivative();
+        shoulderAccumulatedError = shoulderController.getAccumulatedError();
+        shoulderController.getError();
+        double voltage = shoulderController.calculate(getShoulderPosition().in(Rotations), setpoint.in(Rotations));
+
+
+        if (shoulderController.atSetpoint()) {
+            shoulderAtSetpoint = true;
+        } else {
+            shoulderAtSetpoint = false;
+        }
+
+        if (Constants.ArmConstants.SHOULDER_MOTOR_IS_INVERTED) {
+            voltage = -1 * voltage;
+        }
+
+        if (getShoulderPosition().in(Rotations) < 0.05 && getShoulderPosition().in(Rotations) > -0.475) {
+            if (!shoulderAtSetpoint) {
+                //leave voltage alone
+            } else {
+                voltage = 0;
+            }
+        } else {
+            voltage = 0;
+        }
+
+
+        if (m_shoulderMotor.getVoltage() != voltage)
+        {
+            //System.out.println("setting shoulder voltage to " + voltage);
+            //System.out.println("calculated voltage before adding is " + voltage + ", at setpoint: " + shoulderAtSetpoint);
+
+            //voltage = voltage + Math.abs(shoulderFeedforwardVoltage) * Math.signum(voltage);  //TODO disable feed forward for now until we get things stable
+
+            
+            m_shoulderMotor.setVoltage(voltage);
+        }
+        
     }
 
     public void updateTelemetry()
     {
-        rawShoulderPositionPublisher.set(m_shoulderEncoder.getPosition().in(Degrees));
-        rawShoulderVelocityPublisher.set(m_shoulderEncoder.getVelocity().in(DegreesPerSecond));
-        rawWristPositionPublisher.set(m_wristEncoder.getPosition().in(Degrees));
-        rawWristVelocityPublisher.set(m_wristEncoder.getVelocity().in(DegreesPerSecond));
+        rawShoulderPositionPublisher.set(getShoulderPosition().in(Rotations));
+        rawShoulderVelocityPublisher.set(getShoulderVelocity().in(RotationsPerSecond));
+        rawShoulderSetpointPublisher.set(shoulderSetpoint.in(Rotations));
+        rawShoulderErrorPublisher.set(shoulderError.in(Rotations));
+        rawShoulderDerivativePublisher.set(m_shoulderErrorDerivative);
+        rawShoulderVoltagePublisher.set(m_shoulderMotor.getVoltage());
+        rawShoulderFeedforwardPublisher.set(shoulderFeedforwardVoltage);        
+        rawWristPositionPublisher.set(m_wristEncoder.getPosition().in(Rotations));
+        rawWristVelocityPublisher.set(m_wristEncoder.getVelocity().in(RotationsPerSecond));
+        rawWristSetpointPublisher.set(wristSetpoint.in(Rotations));
+        rawWristErrorPublisher.set(wristError.in(Rotations));
+        rawWristVoltagePublisher.set(m_wristMotor.getLastSetVoltage());
+        shoulderErrorAccumulation.set(shoulderAccumulatedError);
     }
 
     public ArmFeedforward getDefaultShoulderFeedForward() {

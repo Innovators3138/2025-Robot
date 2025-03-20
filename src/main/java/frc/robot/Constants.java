@@ -87,29 +87,35 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
   public static final class ArmConstants
   {
-    public static final Angle ARM_L1_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
-    public static final Angle ARM_L2_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
-    public static final Angle ARM_L3_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
-    public static final Angle ARM_L4_ANGLES[] = {Degrees.of(30.0), Degrees.of(30.0)};
-    public static final Angle ARM_STOWED_ANGLES[] = {Degrees.of(-150.0), Degrees.of(30.0)};
+    public static final Angle ARM_INTAKE_ANGLES[] = {Rotations.of(0.040), Rotations.of(0.122)};
+    public static final Angle ARM_L1_ANGLES[] = {Rotations.of(-0.056), Rotations.of(-0.005)};
+    public static final Angle ARM_L2_ANGLES[] = {Rotations.of(-0.060), Rotations.of(0.204)};
+    public static final Angle ARM_L3_ANGLES[] = {Rotations.of(-0.445), Rotations.of(0.133)};
+    public static final Angle ARM_L4_ANGLES[] = {Rotations.of(-0.445), Rotations.of(0.133)};
+    public static final Angle ARM_STOWED_ANGLES[] = {Rotations.of(0.03), Rotations.of(0.112)};
 
     public static final int SHOULDER_ENCODER_SIGNAL = 1;
     public static final int WRIST_ENCODER_SIGNAL = 2;
 
-    public static final Angle SHOULDER_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = Degrees.of(0.0);
-    public static final Angle WRIST_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = Degrees.of(0.0);
+    public static final Angle SHOULDER_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = Rotations.of(0.3);
+    public static final Angle WRIST_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = Rotations.of(0.5);
 
-    public static final Angle SHOULDER_ABSOLUTE_SENSOR_OFFSET = Degrees.of(0.0);
-    public static final Angle WRIST_ABSOLUTE_SENSOR_OFFSET = Degrees.of(0.0);
+    public static final Angle SHOULDER_ABSOLUTE_SENSOR_OFFSET = Rotations.of(0.552);
+    public static final Angle WRIST_ABSOLUTE_SENSOR_OFFSET = Rotations.of(0.012);
 
-    public static final boolean SHOULDER_ENCODER_IS_INVERTED = false;
+    public static final boolean SHOULDER_ENCODER_IS_INVERTED = true;
     public static final boolean WRIST_ENCODER_IS_INVERTED = false;
 
-    public static final double SHOULDER_P = 1.0;
-    public static final double SHOULDER_I = 0;
+    public static final AngularVelocity SHOULDER_IDLE_SPEED_REQUIRED = RotationsPerSecond.of(0.02);
+    public static final AngularVelocity WRIST_IDLE_SPEED_REQUIRED = RotationsPerSecond.of(0.02);
+
+    public static final double WRIST_MAX_ROTATION = 0.650;
+
+    public static final double SHOULDER_P = 12;//20.0;
+    public static final double SHOULDER_I = 5.0;
     public static final double SHOULDER_D = 0;
     public static final double SHOULDER_FF = 0;
-    public static final double SHOULDER_IZ = 10.0;
+    public static final double SHOULDER_IZ = 0.15;
 
     public static final double SHOULDER_KG = 1.07;
     public static final double SHOULDER_KV = 1.69;
@@ -121,14 +127,13 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
     
 
-    public static final double WRIST_P = 1.0;
-    public static final double WRIST_I = 0;
-    public static final double WRIST_D = 0;
+    public static final double WRIST_P = 8;//26.0;
+    public static final double WRIST_I = 1.0;
+    public static final double WRIST_D = 0.5;
     public static final double WRIST_FF = 0;
     public static final double WRIST_IZ = 10.0;
 
-    public static final double CONVERSION_FACTOR = 1024.0 / 360.0;
-    public static final double SHOOTER_COLLISION_ANGLE = 100;
+    public static final double SHOULDER_CONVERSION_FACTOR = 40.0 / 80.0;
 
     public static final int SHOULDER_MOTOR_CURRENT_LIMIT = 40;
     public static final int WRIST_MOTOR_CURRENT_LIMIT = 20;
@@ -146,26 +151,24 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final Distance MINIMUM_SHOULDER_MOVE_SAFE_HEIGHT = Inches.of(10.0); 
     public static final Distance MAXIMUM_SAFE_HEIGHT = Inches.of(27.0);
 
-    public static final Distance ELEVATOR_L1_HEIGHT = Inches.of(0.0);
-    public static final Distance ELEVATOR_L2_HEIGHT = Inches.of(10.0);
-    public static final Distance ELEVATOR_L3_HEIGHT = Inches.of(16.0);
-    public static final Distance ELEVATOR_L4_HEIGHT = Inches.of(25.0);
-    public static final Distance ELEVATOR_STOWED_HEIGHT = Inches.of(0.0);
-    public static final double SHOULDER_MAX_VELOCITY_DEG_PER_SEC = 100.0;
-  }
+    public static final Distance ELEVATOR_INTAKE_HEIGHT = Meters.of(0);
+    public static final Distance ELEVATOR_L1_HEIGHT = Meters.of(0.0);
+    public static final Distance ELEVATOR_L2_HEIGHT = Meters.of(0.459);
+    public static final Distance ELEVATOR_L3_HEIGHT = Meters.of(0.0);
+    public static final Distance ELEVATOR_L4_HEIGHT = Meters.of(0.632);
+    public static final Distance ELEVATOR_STOWED_HEIGHT = Meters.of(0.0);
 
-  public static final class ElevatorConstants {
   public static final Distance ELEVATOR_INITIAL_HEIGHT = Meters.of(0.0);
-  public static final Distance ELEVATOR_MAX_HEIGHT = Inches.of(26.0);
-  public static final boolean ELEVATOR_MOTOR_IS_INVERTED = false;
-  public static final boolean ELEVATOR_ENCODER_IS_INVERTED = false;
-  public static final double ELEVATOR_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = 0.0;
-  public static final double ELEVATOR_ABSOLUTE_SENSOR_OFFSET = 0.0;
-  public static final double ELEVATOR_P = 1.0;
-  public static final double ELEVATOR_I = 0;
-  public static final double ELEVATOR_D = 0;
+  public static final Distance ELEVATOR_MAX_HEIGHT = Meters.of(0.666);
+  public static final boolean ELEVATOR_MOTOR_IS_INVERTED = true;
+  public static final boolean ELEVATOR_ENCODER_IS_INVERTED = true;
+  public static final double ELEVATOR_ABSOLUTE_SENSOR_DISCONTINUITY_POINT = 0.95;
+  public static final double ELEVATOR_ABSOLUTE_SENSOR_OFFSET = 0.225;
+  public static final double ELEVATOR_P = 12;
+  public static final double ELEVATOR_I = 2.0;
+  public static final double ELEVATOR_D = 0.1;
   public static final double ELEVATOR_FF = 0;
-  public static final double ELEVATOR_IZ = 10.0;
+  public static final double ELEVATOR_IZ = 0.1;
 
   public static final double ELEVATOR_KG = 0.48;
   public static final double ELEVATOR_KV = 2.66;
@@ -178,7 +181,15 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
   public static final Distance ELEVATOR_DRUM_DIAMETER = Inches.of(1.432);
   public static final Distance ELEVATOR_CONVERSION_FACTOR = ELEVATOR_DRUM_DIAMETER.times(Math.PI * 64.0 / 24.0 * 64.0 / 24.0); // Distance per Magnet Rotation
   public static final Distance ELEVATOR_THRESHOLD = Inches.of(0.125);
+
+  
   
   }
 
+  public static final class GripperConstants {
+    public static final double LIGHT_SENSOR_THRESHOLD = 0.55; // 0.55 volts
+    public static final double GRIPPER_VOLTAGE_COEFFICIENT = 0.5484375;
+    public static final double GRIPPER_INTAKE_SPEED = 0.5;
+    public static final double TRIGGER_DEADZONE = 0.05;
+  }
 }
