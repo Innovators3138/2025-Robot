@@ -23,7 +23,7 @@ public class GripperSubsystem extends SubsystemBase {
         private final DoublePublisher rawGripperSpeed;
         private final DoublePublisher rawLightSensorVoltage;
         private final BooleanPublisher rawLightSensorTripped;
-
+        private boolean m_isInverted = false;
         private  SparkMaxConfig   m_feederCfg   = new SparkMaxConfig();
     
         
@@ -42,9 +42,13 @@ public class GripperSubsystem extends SubsystemBase {
 
         public void setIntakeSpeed(double intakeSpeed) {
             //System.out.println("Setting intake speed to " + intakeSpeed + ", which is " + (intakeSpeed * 12) + " volts");
+            if (m_isInverted == true){
+                m_feederMotor.setVoltage(intakeSpeed * -12.0);
+
+            }else{
             m_feederMotor.setVoltage(intakeSpeed * 12.0);
         }
-
+    }
         public double getLightSensorValue() {
 
             return m_lightsensor.getAverageVoltage();
@@ -72,6 +76,12 @@ public class GripperSubsystem extends SubsystemBase {
     public void periodic()
     {
         updateTelemetry();
+    }
+    public void invertGripper(){
+        m_isInverted = true;
+    }
+    public void resetGripper(){
+        m_isInverted = false;
     }
 
 

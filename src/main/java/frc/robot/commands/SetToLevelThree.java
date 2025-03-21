@@ -5,16 +5,18 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.arm.Arm;
 import static edu.wpi.first.units.Units.*;
-
+import frc.robot.subsystems.gripper.GripperSubsystem;
 
 public class SetToLevelThree extends Command {
     private final ElevatorSubsystem m_elevatorSubsystem;
+    private final GripperSubsystem m_GripperSubsystem;
     private final Arm m_arm;
     private boolean m_OKToMove = false;
     
 
-    public SetToLevelThree(ElevatorSubsystem elevatorSubsystem, Arm arm) {
+    public SetToLevelThree(ElevatorSubsystem elevatorSubsystem, Arm arm, GripperSubsystem gripperSubsystem) {
         m_elevatorSubsystem = elevatorSubsystem;
+        m_GripperSubsystem = gripperSubsystem;
         m_arm = arm;
         addRequirements(m_elevatorSubsystem, m_arm);
     }
@@ -23,6 +25,7 @@ public class SetToLevelThree extends Command {
         m_arm.stopAllMotionAndClearPIDInfo();
         m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
         m_OKToMove = false;
+        m_GripperSubsystem.invertGripper();
     }
 
     @Override
@@ -52,6 +55,7 @@ public class SetToLevelThree extends Command {
     public void end(boolean interrupted) {
         m_arm.stopAllMotionAndClearPIDInfo();
         m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
+        m_GripperSubsystem.resetGripper();
     }
 
     @Override
