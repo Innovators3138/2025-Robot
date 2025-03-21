@@ -11,7 +11,7 @@ public  StopClimbing(ClimbSubsystem ClimbSubsystem) {
 }
 
 public void initialize() {
-    m_climbSubsystem.StopMotor();
+    //m_climbSubsystem.StopMotor();
   }
   public void end(boolean interrupted) {
    

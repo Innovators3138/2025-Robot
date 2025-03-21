@@ -48,7 +48,7 @@ if ((m_driveController.getLeftTriggerAxis() == 1.0) && (m_driveController.getRig
   }
   }
 public void end() {
-  m_climbSubsystem.StopMotor();
+  //m_climbSubsystem.StopMotor();
 }
 }
 

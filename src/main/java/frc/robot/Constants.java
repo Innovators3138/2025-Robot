@@ -146,6 +146,16 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
   }
 
+  public static final class ClimberConstants {
+    public static final Angle CLIMB_ANGLE = Rotations.of(0.00);
+    public static final Angle STOW_ANGLE = Rotations.of(0.25);
+
+    public static final boolean MOTOR_IS_INVERTED = false;
+    public static final boolean ENCODER_IS_INVERTED = false;
+    public static final double ABSOLUTE_SENSOR_DISCONTINUITY_POINT = 0.3;
+    public static final double ABSOLUTE_SENSOR_OFFSET = 0.225;
+  }
+
   public static final class ElevatorConstants {
     public static final Distance MINIMUM_SAFE_HEIGHT = Inches.of(0.5);
     public static final Distance MINIMUM_SHOULDER_MOVE_SAFE_HEIGHT = Inches.of(10.0); 

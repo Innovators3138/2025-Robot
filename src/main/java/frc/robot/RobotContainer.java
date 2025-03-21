@@ -122,7 +122,7 @@ public class RobotContainer
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(elevatorCANdi);
-  private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem();
+  private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem(elevatorCANdi);
   private static final String autoDefault = "Drive Forward";
   private static final String autoDoNothing = "Do Nothing";
   private static final String autoLeftSideL1 = "Left Side L1";
