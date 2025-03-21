@@ -30,13 +30,13 @@ public class RunClimbTester extends Command {
             (m_controller.getRightTriggerAxis() < GripperConstants.TRIGGER_DEADZONE))
         { 
             //Use left trigger
-            m_climbSubsystem.bypassPIDAndSetSpeedDirectly(GripperConstants.GRIPPER_VOLTAGE_COEFFICIENT * m_controller.getLeftTriggerAxis());
+            m_climbSubsystem.bypassPIDAndSetSpeedDirectly(Math.pow(m_controller.getLeftTriggerAxis(), 2.0));
         }
         else if ((m_controller.getLeftTriggerAxis() < GripperConstants.TRIGGER_DEADZONE) && 
                  (m_controller.getRightTriggerAxis() >= GripperConstants.TRIGGER_DEADZONE))
         {
             //use right trigger
-            m_climbSubsystem.bypassPIDAndSetSpeedDirectly(GripperConstants.GRIPPER_VOLTAGE_COEFFICIENT * m_controller.getRightTriggerAxis() * -1);
+            m_climbSubsystem.bypassPIDAndSetSpeedDirectly(Math.pow(m_controller.getRightTriggerAxis(), 2.0) * -1);
         }
         else
         {
