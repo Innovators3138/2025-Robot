@@ -25,18 +25,8 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.GripperSubsystem;
-import frc.robot.commands.ClimbComands.ClimbCommand;
-import frc.robot.commands.ClimbComands.StopClimbing;
-import frc.robot.commands.IntakeGamepiece;
-import frc.robot.commands.MoveElevator;
-import frc.robot.commands.MoveWrist;
-import frc.robot.commands.MoveShoulder;
-import frc.robot.commands.RunGripper;
-import frc.robot.commands.MoveShoulderAndWrist;
-import frc.robot.commands.SetToLevelOne;
-import frc.robot.commands.SetToLevelTwo;
-import frc.robot.commands.SetToLevelThree;
-import frc.robot.commands.SetToLevelFour;
+import frc.robot.commands.ClimbComands.*;
+import frc.robot.commands.*;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.arm.Arm;
@@ -189,16 +179,6 @@ public class RobotContainer
     } else 
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-      //operatorXbox.y().onTrue(new MoveShoulder(arm, Rotations.of(-0.171)).repeatedly().andThen(new MoveWrist(arm, Rotations.of(0.112)).repeatedly()));
-      
-      /*operatorXbox.b().onTrue(new MoveShoulder(arm, ArmConstants.ARM_INTAKE_ANGLES[0]).repeatedly());
-      operatorXbox.a().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L1_ANGLES[0]).repeatedly());
-      operatorXbox.x().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L2_ANGLES[0]).repeatedly());
-      operatorXbox.y().onTrue(new MoveShoulder(arm, ArmConstants.ARM_L3_ANGLES[0]).repeatedly());*/
-      //operatorXbox.b().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_INTAKE_ANGLES[0], ArmConstants.ARM_INTAKE_ANGLES[1]).repeatedly());
-      //operatorXbox.a().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_L1_ANGLES[0], ArmConstants.ARM_L1_ANGLES[1]).repeatedly());
-      //operatorXbox.x().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_L2_ANGLES[0], ArmConstants.ARM_L2_ANGLES[1]).repeatedly());
-      //operatorXbox.y().onTrue(new MoveShoulderAndWrist(m_arm, ArmConstants.ARM_L3_ANGLES[0], ArmConstants.ARM_L3_ANGLES[1]).repeatedly());
 
       operatorXbox.x().onTrue(new SetToLevelOne(m_elevator, m_arm));
       operatorXbox.a().onTrue(new SetToLevelTwo(m_elevator, m_arm));
@@ -208,19 +188,12 @@ public class RobotContainer
       //operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).andThen(new WaitCommand(0.5)).andThen(new SetToLevelOne(m_elevator, m_arm)));
       operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake
 
-      //operatorXbox.x().onTrue(new MoveWrist(arm, Rotations.of(0.112)).repeatedly());
-      //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
-      //operatorXbox.y().onTrue(new RunGripper(m_GripperSubsystem, 0.3 ).repeatedly());
+
       m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));
-      m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
-      //operatorXbox.leftBumper().onTrue(new RunGripper(m_GripperSubsystem, 0.1).repeatedly());
-      //operatorXbox.rightBumper().onTrue(new RunGripper(m_GripperSubsystem, 1).repeatedly());
-      //operatorXbox.leftBumper().onFalse(new RunGripper(m_GripperSubsystem, 0.0).repeatedly());
-      //operatorXbox.rightBumper().onFalse(new RunGripper(m_GripperSubsystem, 0.0).repeatedly());
-      //operatorXbox.a().onTrue(new SetToLevelOne(m_elevator, arm));
-      //operatorXbox.x().onTrue(new SetToLevelTwo(m_elevator, arm));
-      //operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, arm));
-      //operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, arm));
+      //m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
+
+      //this uses trigger on driver controller to test the climb mechanism movements with touch sensitivity
+      m_climbSubsystem.setDefaultCommand(new RunClimbTester(m_climbSubsystem, driverXbox));
 
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
