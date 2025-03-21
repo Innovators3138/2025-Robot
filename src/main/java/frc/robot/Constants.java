@@ -149,6 +149,7 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
   public static final class ClimberConstants {
     public static final Angle CLIMB_ANGLE = Rotations.of(0.00);
     public static final Angle STOW_ANGLE = Rotations.of(0.25);
+    public static final Angle RELEASE_ANGLE = Rotations.of(0.2);
     public static final Angle MIN_ANGLE = Rotations.of(Math.min(CLIMB_ANGLE.in(Rotations), STOW_ANGLE.in(Rotations)));
     public static final Angle MAX_ANGLE = Rotations.of(Math.max(CLIMB_ANGLE.in(Rotations), STOW_ANGLE.in(Rotations)));
 
@@ -166,6 +167,7 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final double PID_MAX_INTEGRATOR = CLIMBER_P / 2.0; //max I-value can be accumulated to
     public static final double PID_MIN_INTEGRATOR = -1 * CLIMBER_P / 2.0; //min I-value can be accumulated to
 
+    public static final double TRIGGER_ACTIVATION_LEVEL = 0.9;
   }
 
   public static final class ElevatorConstants {

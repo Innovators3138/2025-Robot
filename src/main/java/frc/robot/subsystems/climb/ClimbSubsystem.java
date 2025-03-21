@@ -75,18 +75,8 @@ public class ClimbSubsystem extends SubsystemBase {
         m_climbMotor.setVoltage(0);
     }
 
-    public void setClimberPositionAndUpdatePID(Angle setPoint)
+    public void updatePIDToMaintainSetPoint()
     {
-        if ((setPoint.in(Rotations) < ClimberConstants.MAX_ANGLE.in(Rotations)) && 
-            (setPoint.in(Rotations) > ClimberConstants.MIN_ANGLE.in(Rotations)))
-        {
-            m_pidController.setSetpoint(setPoint.in(Rotations));
-        }
-        else
-        {
-            System.out.println("Illegal climber set point provided: " + setPoint.in(Rotations));
-        }
-
         double voltage = m_pidController.calculate(getClimberPosition().in(Rotations));
 
         if (Constants.ClimberConstants.MOTOR_IS_INVERTED)
@@ -99,6 +89,32 @@ public class ClimbSubsystem extends SubsystemBase {
         voltage = Math.min(Constants.NOMINAL_VOLTAGE, voltage);
 
         m_climbMotor.setVoltage(voltage);
+    }
+
+    public void bypassPIDAndSetSpeedDirectly(double speed)
+    {
+        m_pidController.reset();
+
+        double voltage = speed * Constants.NOMINAL_VOLTAGE;
+        voltage = Math.max(Constants.NOMINAL_VOLTAGE, voltage);
+        voltage = Math.min(Constants.NOMINAL_VOLTAGE, voltage);
+
+        m_climbMotor.setVoltage(speed * Constants.NOMINAL_VOLTAGE);
+    }
+
+    public void setClimberPositionAndUpdatePID(Angle setPoint)
+    {
+        if ((setPoint.in(Rotations) < ClimberConstants.MAX_ANGLE.in(Rotations)) && 
+            (setPoint.in(Rotations) > ClimberConstants.MIN_ANGLE.in(Rotations)))
+        {
+            m_pidController.setSetpoint(setPoint.in(Rotations));
+        }
+        else
+        {
+            System.out.println("Illegal climber set point provided: " + setPoint.in(Rotations));
+        }
+
+        updatePIDToMaintainSetPoint();
     }
 
     public boolean atSetPoint() 
