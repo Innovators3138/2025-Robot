@@ -94,6 +94,10 @@ public class ClimbSubsystem extends SubsystemBase {
             voltage *= -1;
         }
 
+        //enforce max voltage allowed for the motor
+        voltage = Math.max(Constants.NOMINAL_VOLTAGE, voltage);
+        voltage = Math.min(Constants.NOMINAL_VOLTAGE, voltage);
+
         m_climbMotor.setVoltage(voltage);
     }
 
