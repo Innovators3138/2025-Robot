@@ -202,16 +202,16 @@ public class RobotContainer
 
       operatorXbox.x().onTrue(new SetToLevelOne(m_elevator, m_arm));
       operatorXbox.a().onTrue(new SetToLevelTwo(m_elevator, m_arm));
-      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm));
-      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm));
+      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm, m_GripperSubsystem ));
+      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm, m_GripperSubsystem));
 
       //operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).andThen(new WaitCommand(0.5)).andThen(new SetToLevelOne(m_elevator, m_arm)));
       operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake
-
+      
       //operatorXbox.x().onTrue(new MoveWrist(arm, Rotations.of(0.112)).repeatedly());
       //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
       //operatorXbox.y().onTrue(new RunGripper(m_GripperSubsystem, 0.3 ).repeatedly());
-      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));
+      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));      
       m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
       //operatorXbox.leftBumper().onTrue(new RunGripper(m_GripperSubsystem, 0.1).repeatedly());
       //operatorXbox.rightBumper().onTrue(new RunGripper(m_GripperSubsystem, 1).repeatedly());
