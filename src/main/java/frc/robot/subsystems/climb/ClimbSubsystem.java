@@ -1,4 +1,5 @@
 package frc.robot.subsystems.climb;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -10,6 +11,7 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.sensors.CANdiEncoder;
+import frc.robot.utils.PIDFConfig;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
@@ -27,10 +29,12 @@ public class ClimbSubsystem extends SubsystemBase {
     private boolean m_Activated = false;
     private final CANdiEncoder m_climberEncoder;
     private final PWM1Configs m_climberPWMConfig = new PWM1Configs();
+    private PIDController m_pidController;
 
     private final DoublePublisher m_positionPublisher;
     private final DoublePublisher m_velocityPublisher;
     private final DoublePublisher m_voltagePublisher;
+    private final DoublePublisher m_pidSetPointPublisher;
 
 
     public ClimbSubsystem(CANdi candi) {
@@ -53,25 +57,51 @@ public class ClimbSubsystem extends SubsystemBase {
         m_climbMotor.setMotorBrake(true);
         m_climbMotor.burnFlash();
 
+
+        m_pidController = new PIDController(ClimberConstants.CLIMBER_P, ClimberConstants.CLIMBER_I, ClimberConstants.CLIMBER_D);
+        m_pidController.setTolerance(ClimberConstants.PID_TOLERANCE_ROTATIONS);
+        m_pidController.setIZone(ClimberConstants.PID_IZONE_ROTATIONS);
+        m_pidController.setIntegratorRange(ClimberConstants.PID_MAX_INTEGRATOR, ClimberConstants.PID_MIN_INTEGRATOR);
+
         m_positionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Raw Absolute Encoder Position").publish();
         m_velocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Raw Absolute Encoder Velocity").publish();
         m_voltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Voltage").publish();
-        
+        m_pidSetPointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/PID Set Point Position").publish();
     }
 
-    public void activateClimbUp(double speed)
+    public void stopAllMotionAndClearPIDInfo()
     {
-        m_climbMotor.set(speed * 1.0);
+        m_pidController.reset();
+        m_climbMotor.setVoltage(0);
     }
 
-    public void activateClimbDown(double speed)
+    public void setClimberPositionAndUpdatePID(Angle setPoint)
     {
-        m_climbMotor.set(speed * -1.0);
+        if ((setPoint.in(Rotations) < ClimberConstants.MAX_ANGLE.in(Rotations)) && 
+            (setPoint.in(Rotations) > ClimberConstants.MIN_ANGLE.in(Rotations)))
+        {
+            m_pidController.setSetpoint(setPoint.in(Rotations));
+        }
+        else
+        {
+            System.out.println("Illegal climber set point provided: " + setPoint.in(Rotations));
+        }
+
+        double voltage = m_pidController.calculate(getClimberPosition().in(Rotations));
+
+        if (Constants.ClimberConstants.MOTOR_IS_INVERTED)
+        {
+            voltage *= -1;
+        }
+
+        m_climbMotor.setVoltage(voltage);
     }
-    public void stopClimb()
-    {    
-        m_climbMotor.set(0.0);
+
+    public boolean atSetPoint() 
+    { 
+        return m_pidController.atSetpoint(); 
     }
+
 
     public AngularVelocity getClimbVelocity()
     {
@@ -83,7 +113,7 @@ public class ClimbSubsystem extends SubsystemBase {
         return m_climberEncoder.getPosition();
     }
 
-    public void ActivateClimber()
+    public void markClimberActivated()
     {
         m_Activated = true;
     }
@@ -97,6 +127,7 @@ public class ClimbSubsystem extends SubsystemBase {
         m_positionPublisher.set(getClimberPosition().in(Rotations));
         m_velocityPublisher.set(getClimbVelocity().in(RotationsPerSecond));
         m_voltagePublisher.set(m_climbMotor.getVoltage());
+        m_pidSetPointPublisher.set(m_pidController.getSetpoint());
     }
 
     public void periodic()
