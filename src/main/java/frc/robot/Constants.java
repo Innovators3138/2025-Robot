@@ -9,9 +9,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import swervelib.math.Matter;
 import static edu.wpi.first.units.Units.*;
-
-import java.security.PublicKey;
-
+import java.util.List;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.units.measure.*;
 
 /**
@@ -73,6 +73,8 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
     // Hold time on motor brakes when disabled
     public static final double WHEEL_LOCK_TIME = 10; // seconds
+    public static final double DRIVEBASE_WIDTH = Units.inchesToMeters(29);
+    public static final double DRIVEBASE_LENGTH = Units.inchesToMeters(29);
   }
 
   public static class OperatorConstants
@@ -192,4 +194,22 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final double GRIPPER_INTAKE_SPEED = 0.5;
     public static final double TRIGGER_DEADZONE = 0.05;
   }
+
+  public static final class VisionConstants {
+    public static final int cameraWidth = 960;
+    public static final int cameraHeight = 720;
+    public static final LinearVelocity AUTO_DRIVE_VELOCITY = MetersPerSecond.of(1);
+    public static final LinearAcceleration AUTO_DRIVE_ACCELERATION = MetersPerSecondPerSecond.of(1);
+  }
+
+  public static final AprilTagFieldLayout TestField = new AprilTagFieldLayout(
+    List.of(
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField)
+        .getTags()
+        .stream()
+        .filter(tag -> tag.ID == 10)
+        .findFirst()
+        .get()
+    ), 17.548, 8.052
+  );
 }
