@@ -63,10 +63,10 @@ public class ClimbSubsystem extends SubsystemBase {
         m_pidController.setIZone(ClimberConstants.PID_IZONE_ROTATIONS);
         m_pidController.setIntegratorRange(ClimberConstants.PID_MAX_INTEGRATOR, ClimberConstants.PID_MIN_INTEGRATOR);
 
-        m_positionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Raw Absolute Encoder Position").publish();
-        m_velocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Raw Absolute Encoder Velocity").publish();
-        m_voltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/Voltage").publish();
-        m_pidSetPointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("climber/PID Set Point Position").publish();
+        m_positionPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("climber/Raw Absolute Encoder Position").publish();
+        m_velocityPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("climber/Raw Absolute Encoder Velocity").publish();
+        m_voltagePublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("climber/Voltage").publish();
+        m_pidSetPointPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("climber/PID Set Point Position").publish();
     }
 
     public void stopAllMotionAndClearPIDInfo()
