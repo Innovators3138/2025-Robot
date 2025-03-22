@@ -94,6 +94,9 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final Angle ARM_L4_ANGLES[] = {Rotations.of(-0.445), Rotations.of(0.133)};
     public static final Angle ARM_STOWED_ANGLES[] = {Rotations.of(0.03), Rotations.of(0.112)};
 
+    public static final Angle SHOULDER_MIN_SAFE_ANGLE = Rotations.of(-0.475);
+    public static final Angle SHOULDER_MAX_SAFE_ANGLE = Rotations.of(0.05);
+
     public static final int SHOULDER_ENCODER_SIGNAL = 1;
     public static final int WRIST_ENCODER_SIGNAL = 2;
 

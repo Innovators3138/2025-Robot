@@ -182,8 +182,8 @@ public class RobotContainer
 
       operatorXbox.x().onTrue(new SetToLevelOne(m_elevator, m_arm));
       operatorXbox.a().onTrue(new SetToLevelTwo(m_elevator, m_arm));
-      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm));
-      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm));
+      operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, m_arm, m_GripperSubsystem ));
+      operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, m_arm, m_GripperSubsystem));
 
       //operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).andThen(new WaitCommand(0.5)).andThen(new SetToLevelOne(m_elevator, m_arm)));
       operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake

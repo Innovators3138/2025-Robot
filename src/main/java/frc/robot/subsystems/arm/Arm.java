@@ -62,7 +62,6 @@ public class Arm extends SubsystemBase {
     private final DoublePublisher rawWristErrorPublisher;
     private final DoublePublisher rawWristVoltagePublisher;
     public boolean wristAtSetpoint = false;
-    public boolean shoulderAtSetpoint = false;
     private double shoulderFeedforwardVoltage = 0.0;
     private double shoulderAccumulatedError = 0.0;
     private double m_shoulderErrorDerivative = 0.0;
@@ -213,50 +212,58 @@ public class Arm extends SubsystemBase {
         shoulderFeedforwardVoltage = shoulderFeedforward.calculate((position).in(Radians) + Math.PI / 2, getShoulderVelocity().in(RadiansPerSecond));
         this.shoulderError = position.minus(setpoint);  //TODO should we just use shoulderController.getError()?
 
-        if (setpoint != this.shoulderSetpoint)
+        double voltage = 0.0;
+
+        //add protection for arm moving out of bounds
+        if (position.in(Rotations) < ArmConstants.SHOULDER_MIN_SAFE_ANGLE.in(Rotations))
         {
-            this.shoulderSetpoint = setpoint; 
-        
-            System.out.println("Setting shoulder position setpoint " + setpoint + ", shoulder feed forward voltage: " + shoulderFeedforwardVoltage + ", current shoulder position is " + getShoulderPosition().in(Rotations));
+            shoulderController.reset();
+
+            voltage = 1.0; //force arm to move back into bounds until its in valid range for PID again
+
+            System.out.println("Out of bounds shoulder position detected.  Setting voltage to 1.0 to force back into position");
         }
+        else if (position.in(Rotations) > ArmConstants.SHOULDER_MAX_SAFE_ANGLE.in(Rotations))
+        {
+            shoulderController.reset();
 
-        
-        
-        m_shoulderErrorDerivative = shoulderController.getErrorDerivative();
-        shoulderAccumulatedError = shoulderController.getAccumulatedError();
-        shoulderController.getError();
-        double voltage = shoulderController.calculate(getShoulderPosition().in(Rotations), setpoint.in(Rotations));
+            voltage = -1.0; //force arm to move back into bounds until its in valid range for PID again
 
-
-        if (shoulderController.atSetpoint()) {
-            shoulderAtSetpoint = true;
-        } else {
-            shoulderAtSetpoint = false;
+            System.out.println("Out of bounds shoulder position detected.  Setting voltage to -1.0 to force back into position");
         }
+        else
+        {
 
-        if (Constants.ArmConstants.SHOULDER_MOTOR_IS_INVERTED) {
-            voltage = -1 * voltage;
-        }
+            if (setpoint != this.shoulderSetpoint)
+            {
+                this.shoulderSetpoint = setpoint; 
+            
+                System.out.println("Setting shoulder position setpoint " + setpoint + ", shoulder feed forward voltage: " + shoulderFeedforwardVoltage + ", current shoulder position is " + getShoulderPosition().in(Rotations));
+            }
 
-        if (getShoulderPosition().in(Rotations) < 0.05 && getShoulderPosition().in(Rotations) > -0.475) {
-            if (!shoulderAtSetpoint) {
-                //leave voltage alone
-            } else {
+            m_shoulderErrorDerivative = shoulderController.getErrorDerivative();
+            shoulderAccumulatedError = shoulderController.getAccumulatedError();
+            shoulderController.getError();
+            voltage = shoulderController.calculate(getShoulderPosition().in(Rotations), setpoint.in(Rotations));
+
+            if (Constants.ArmConstants.SHOULDER_MOTOR_IS_INVERTED) {
+                voltage = -1 * voltage;
+            }
+
+            if (shoulderController.atSetpoint())
+            {
                 voltage = 0;
             }
-        } else {
-            voltage = 0;
         }
 
 
         if (m_shoulderMotor.getVoltage() != voltage)
         {
             //System.out.println("setting shoulder voltage to " + voltage);
-            //System.out.println("calculated voltage before adding is " + voltage + ", at setpoint: " + shoulderAtSetpoint);
+            //System.out.println("calculated voltage before adding is " + voltage + ", at setpoint: " + shoulderController.atSetpoint());
 
             //voltage = voltage + Math.abs(shoulderFeedforwardVoltage) * Math.signum(voltage);  //TODO disable feed forward for now until we get things stable
 
-            
             m_shoulderMotor.setVoltage(voltage);
         }
         
