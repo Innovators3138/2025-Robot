@@ -9,9 +9,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import swervelib.math.Matter;
 import static edu.wpi.first.units.Units.*;
-
-import java.security.PublicKey;
-
+import java.util.List;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.units.measure.*;
 
 /**
@@ -73,6 +73,8 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
     // Hold time on motor brakes when disabled
     public static final double WHEEL_LOCK_TIME = 10; // seconds
+    public static final double DRIVEBASE_WIDTH = Units.inchesToMeters(29);
+    public static final double DRIVEBASE_LENGTH = Units.inchesToMeters(29);
   }
 
   public static class OperatorConstants
@@ -88,7 +90,7 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
   public static final class ArmConstants
   {
     public static final Angle ARM_INTAKE_ANGLES[] = {Rotations.of(0.040), Rotations.of(0.122)};
-    public static final Angle ARM_L1_ANGLES[] = {Rotations.of(-0.056), Rotations.of(-0.005)};
+    public static final Angle ARM_L1_ANGLES[] = {Rotations.of(-0.056), Rotations.of(-0.065)};
     public static final Angle ARM_L2_ANGLES[] = {Rotations.of(-0.060), Rotations.of(0.204)};
     public static final Angle ARM_L3_ANGLES[] = {Rotations.of(-0.445), Rotations.of(0.133)};
     public static final Angle ARM_L4_ANGLES[] = {Rotations.of(-0.445), Rotations.of(0.133)};
@@ -130,9 +132,9 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
     
 
-    public static final double WRIST_P = 8;//26.0;
+    public static final double WRIST_P = 10;//26.0;
     public static final double WRIST_I = 1.0;
-    public static final double WRIST_D = 0.5;
+    public static final double WRIST_D = 0.3;
     public static final double WRIST_FF = 0;
     public static final double WRIST_IZ = 10.0;
 
@@ -218,5 +220,24 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final double GRIPPER_VOLTAGE_COEFFICIENT = 0.5484375;
     public static final double GRIPPER_INTAKE_SPEED = 0.5;
     public static final double TRIGGER_DEADZONE = 0.05;
+    public static final double GRIPPER_RELEASE_SPEED = 1;
   }
+
+  public static final class VisionConstants {
+    public static final int cameraWidth = 960;
+    public static final int cameraHeight = 720;
+    public static final LinearVelocity AUTO_DRIVE_VELOCITY = MetersPerSecond.of(1);
+    public static final LinearAcceleration AUTO_DRIVE_ACCELERATION = MetersPerSecondPerSecond.of(1);
+  }
+
+  public static final AprilTagFieldLayout TestField = new AprilTagFieldLayout(
+    List.of(
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField)
+        .getTags()
+        .stream()
+        .filter(tag -> tag.ID == 10)
+        .findFirst()
+        .get()
+    ), 17.548, 8.052
+  );
 }

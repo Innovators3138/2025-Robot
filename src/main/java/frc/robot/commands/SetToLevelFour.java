@@ -11,20 +11,31 @@ public class SetToLevelFour extends Command {
     private final ElevatorSubsystem m_elevatorSubsystem;
     private final Arm m_arm;
     private boolean m_OKToMove = false;
-    private final GripperSubsystem m_GripperSubsystem;
+    private final GripperSubsystem m_gripperSubsystem;
+    private boolean m_finishAfterSetpointReached = false;
+    private boolean m_finished = false;
 
     public SetToLevelFour(ElevatorSubsystem elevatorSubsystem, Arm arm, GripperSubsystem gripperSubsystem) {
         m_elevatorSubsystem = elevatorSubsystem;
-        m_GripperSubsystem = gripperSubsystem;
+        m_gripperSubsystem = gripperSubsystem;
         m_arm = arm;
         addRequirements(m_elevatorSubsystem, m_arm);
     }
+    public SetToLevelFour(ElevatorSubsystem elevatorSubsystem, Arm arm, GripperSubsystem gripperSubsystem, Boolean finishAfterSetpointReached) {
+        m_elevatorSubsystem = elevatorSubsystem;
+        m_gripperSubsystem = gripperSubsystem;
+        m_arm = arm;
+        addRequirements(m_elevatorSubsystem, m_arm);
+        m_finishAfterSetpointReached = finishAfterSetpointReached;
+    }
+
     @Override
     public void initialize() {
         m_arm.stopAllMotionAndClearPIDInfo();
         m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
         m_OKToMove = false;
-        m_GripperSubsystem.invertGripper();
+        m_gripperSubsystem.invertGripper();
+        m_finished = false;
     }
 
     @Override
@@ -34,6 +45,11 @@ public class SetToLevelFour extends Command {
             m_elevatorSubsystem.setElevatorPosition(ElevatorConstants.ELEVATOR_L4_HEIGHT);
             m_arm.setShoulderPosition(ArmConstants.ARM_L4_ANGLES[0]);
             m_arm.setWristPosition(ArmConstants.ARM_L4_ANGLES[1]);
+
+            if (m_finishAfterSetpointReached && m_arm.shoulderAtSetPoint() && m_arm.wristAtSetPoint() && m_elevatorSubsystem.atSetpoint())
+            {
+                m_finished = true;
+            }
         }
         else 
         {
@@ -53,12 +69,12 @@ public class SetToLevelFour extends Command {
     @Override
     public void end(boolean interrupted) {
         m_arm.stopAllMotionAndClearPIDInfo();
-        m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
-        m_GripperSubsystem.resetGripper();
+        //Note: do not stop elevator.  It will maintain itself
+        m_gripperSubsystem.resetGripper();
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return m_finished;
     }
 }

@@ -11,17 +11,28 @@ public class SetToLevelOne extends Command {
     private final ElevatorSubsystem m_elevatorSubsystem;
     private final Arm m_arm;
     private boolean m_OKToMove = false;
+    private boolean m_finishAfterSetpointReached = false;
+    private boolean m_finished = false;
 
     public SetToLevelOne(ElevatorSubsystem elevatorSubsystem, Arm arm) {
         m_elevatorSubsystem = elevatorSubsystem;
         m_arm = arm;
         addRequirements(m_elevatorSubsystem, m_arm);
     }
+
+    public SetToLevelOne(ElevatorSubsystem elevatorSubsystem, Arm arm, Boolean finishAfterSetpointReached) {
+        m_elevatorSubsystem = elevatorSubsystem;
+        m_arm = arm;
+        addRequirements(m_elevatorSubsystem, m_arm);
+        m_finishAfterSetpointReached = finishAfterSetpointReached;
+    }
+
     @Override
     public void initialize() {
         m_arm.stopAllMotionAndClearPIDInfo();
         m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
         m_OKToMove = false;
+        m_finished = false;
     }
 
     @Override
@@ -32,6 +43,11 @@ public class SetToLevelOne extends Command {
             m_elevatorSubsystem.setElevatorPosition(ElevatorConstants.ELEVATOR_L1_HEIGHT);
             m_arm.setShoulderPosition(ArmConstants.ARM_L1_ANGLES[0]);
             m_arm.setWristPosition(ArmConstants.ARM_L1_ANGLES[1]);
+
+            if (m_finishAfterSetpointReached && m_arm.shoulderAtSetPoint() && m_arm.wristAtSetPoint() && m_elevatorSubsystem.atSetpoint())
+            {
+                m_finished = true;
+            }
         }
         else 
         {
@@ -51,11 +67,11 @@ public class SetToLevelOne extends Command {
     @Override
     public void end(boolean interrupted) {
         m_arm.stopAllMotionAndClearPIDInfo();
-        m_elevatorSubsystem.stopAllMotionAndClearPIDInfo();
+        //Note: do not stop elevator.  It will maintain itself
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return m_finished;
     }
 }

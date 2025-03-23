@@ -57,14 +57,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     private ElevatorFeedforward elevatorFeedforward;
     public final Cache<Distance> elevatorPositionCache;
     public final Cache<LinearVelocity> elevatorVelocityCache;
-    private  Distance elevatorSetpoint = Meters.of(0);
     private  Distance elevatorError = Meters.of(0);
     private final DoublePublisher rawElevatorPositionPublisher;
     private final DoublePublisher rawElevatorVelocityPublisher;
     private final DoublePublisher rawElevatorSetpointPublisher;
     private final DoublePublisher rawElevatorErrorPublisher;
     private final DoublePublisher rawElevatorVoltage;
-    public boolean atSetpoint = false;
+    private boolean m_setpointProgrammed = false;
 
     PIDController m_pidController;
         
@@ -108,11 +107,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         // dividing by 60 to convert meters per minute to meters per second
         // elevatorEncoder.setVelocityConversionFactor(Double.parseDouble(ElevatorConstants.METERS_PER_REVOLUTION));
 
-        rawElevatorPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Raw Absolute Encoder Position").publish();
-        rawElevatorVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Raw Absolute Encoder Velocity").publish();
-        rawElevatorSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Setpoint").publish();
-        rawElevatorErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Error").publish();
-        rawElevatorVoltage = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("elevator/Voltage").publish();
+        rawElevatorPositionPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("elevator/Raw Absolute Encoder Position").publish();
+        rawElevatorVelocityPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("elevator/Raw Absolute Encoder Velocity").publish();
+        rawElevatorSetpointPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("elevator/Setpoint").publish();
+        rawElevatorErrorPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("elevator/Error").publish();
+        rawElevatorVoltage = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("elevator/Voltage").publish();
 
 
     }
@@ -129,34 +128,42 @@ public class ElevatorSubsystem extends SubsystemBase {
     {
         m_pidController.reset();
         m_elevatorMotor.setVoltage(0);
+        m_setpointProgrammed = false;
     }
 
-    public boolean atSetPoint() { return m_pidController.atSetpoint(); }
+    public boolean atSetpoint() { return m_pidController.atSetpoint(); }
+
+    public boolean isSetPointProgrammed() { return m_setpointProgrammed; }
+
+    public Distance getSetpoint() { return Meters.of(m_pidController.getSetpoint()); }
+
+    private void maintainElevatorPositionPID()
+    {
+        if (m_setpointProgrammed)
+        {
+            double voltage = m_pidController.calculate(getElevatorPosition().in(Meters)) + 0.3;
+            if (Constants.ElevatorConstants.ELEVATOR_MOTOR_IS_INVERTED) {
+                voltage = -1 * voltage;
+            }
+
+            //System.out.println("Elevator voltage to set = " + voltage + ", elevator pos in meters: " + getElevatorPosition().in(Meters));
+
+            if (getElevatorPosition().in(Meters) < (ElevatorConstants.ELEVATOR_MAX_HEIGHT.in(Meters) - 0.01)) {
+                m_elevatorMotor.setVoltage(voltage);
+            }
+            else {
+                m_elevatorMotor.setVoltage(0);
+            }
+        }
+    }
 
     public void setElevatorPosition(Distance setpoint) {
         Distance position = getElevatorPosition();
-        this.elevatorSetpoint = setpoint;
+        m_pidController.setSetpoint(setpoint.in(Meters));
         this.elevatorError = position.minus(setpoint);
 
+        m_setpointProgrammed = true;
         
-        if (m_pidController.atSetpoint()) {
-            atSetpoint = true;
-        } else {
-            atSetpoint = false;
-        }
-        double voltage = m_pidController.calculate(getElevatorPosition().in(Meters), setpoint.in(Meters)) + 0.3;
-        if (Constants.ElevatorConstants.ELEVATOR_MOTOR_IS_INVERTED) {
-            voltage = -1 * voltage;
-        }
-
-        //System.out.println("Elevator voltage to set = " + voltage + ", elevator pos in meters: " + getElevatorPosition().in(Meters));
-
-        if (getElevatorPosition().in(Meters) < (ElevatorConstants.ELEVATOR_MAX_HEIGHT.in(Meters) - 0.01)) {
-            m_elevatorMotor.setVoltage(voltage);
-        }
-        else {
-            m_elevatorMotor.setVoltage(0);
-        }
         //m_elevatorMotor.setReference(setpoint.in(Meters), elevatorFeedforward.calculate(0.0));
     }
 
@@ -172,13 +179,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     {
         rawElevatorPositionPublisher.set(getElevatorPosition().in(Meters));
         rawElevatorVelocityPublisher.set(m_elevatorEncoder.getVelocity().in(RotationsPerSecond) * ElevatorConstants.ELEVATOR_CONVERSION_FACTOR.in(Meters));
-        rawElevatorSetpointPublisher.set(elevatorSetpoint.in(Meters));
+        rawElevatorSetpointPublisher.set(m_pidController.getSetpoint());
         rawElevatorErrorPublisher.set(elevatorError.in(Meters));
         rawElevatorVoltage.set(m_elevatorMotor.getVoltage());
     }
 
     public void periodic()
     {
+        maintainElevatorPositionPID();
         updateTelemetry();
     }
 

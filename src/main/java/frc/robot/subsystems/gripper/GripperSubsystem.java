@@ -33,9 +33,9 @@ public class GripperSubsystem extends SubsystemBase {
             //m_feederCfg.voltageCompensation(12);
             //m_feederMotor.configure(m_feederCfg, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
             m_lightsensor.setAverageBits(2);
-            rawGripperSpeed = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("gripper/Raw Gripper Speed").publish();
-            rawLightSensorVoltage = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("gripper/Raw Light Sensor Voltage").publish();
-            rawLightSensorTripped = NetworkTableInstance.getDefault().getTable("SmartDashboard").getBooleanTopic("gripper/Light Sensor Tripped").publish();
+            rawGripperSpeed = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("gripper/Raw Gripper Speed").publish();
+            rawLightSensorVoltage = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("gripper/Raw Light Sensor Voltage").publish();
+            rawLightSensorTripped = NetworkTableInstance.getDefault().getTable("AdvantageKit").getBooleanTopic("gripper/Light Sensor Tripped").publish();
 
 
         }

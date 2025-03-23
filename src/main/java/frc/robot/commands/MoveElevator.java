@@ -25,7 +25,7 @@ public class MoveElevator extends Command {
     @Override
     public void execute() {
         m_elevatorSubsystem.setElevatorPosition(elevatorSetpoint);
-        if (m_elevatorSubsystem.atSetpoint) {
+        if (m_elevatorSubsystem.atSetpoint()) {
             finished = true;
         }
     }

@@ -130,24 +130,24 @@ public class Arm extends SubsystemBase {
         wristPositionCache.update();
         wristVelocityCache.update();
 
-        rawShoulderPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Position").publish();
-        rawShoulderVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Velocity").publish();
-        rawShoulderSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Position Setpoint").publish();
-        rawShoulderErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Position Error").publish();
-        rawShoulderDerivativePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw position derivative error").publish();
-        rawShoulderVoltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Voltage").publish();
-        rawShoulderFeedforwardPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Raw Feedforward Voltage").publish();
-        rawWristPositionPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Absolute Encoder Position").publish();
-        rawWristVelocityPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Absolute Encoder Velocity").publish();
-        rawWristSetpointPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Position Setpoint").publish();
-        rawWristErrorPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Position Error").publish();
-        rawWristVoltagePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/wrist/Raw Voltage").publish();
-        shoulderErrorAccumulation = NetworkTableInstance.getDefault().getTable("SmartDashboard").getDoubleTopic("arm/shoulder/Shoulder Accumulated Error").publish();
+        rawShoulderPositionPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Position").publish();
+        rawShoulderVelocityPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Absolute Encoder Velocity").publish();
+        rawShoulderSetpointPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Position Setpoint").publish();
+        rawShoulderErrorPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Position Error").publish();
+        rawShoulderDerivativePublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw position derivative error").publish();
+        rawShoulderVoltagePublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Voltage").publish();
+        rawShoulderFeedforwardPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Raw Feedforward Voltage").publish();
+        rawWristPositionPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/wrist/Raw Absolute Encoder Position").publish();
+        rawWristVelocityPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/wrist/Raw Absolute Encoder Velocity").publish();
+        rawWristSetpointPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/wrist/Raw Position Setpoint").publish();
+        rawWristErrorPublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/wrist/Raw Position Error").publish();
+        rawWristVoltagePublisher = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/wrist/Raw Voltage").publish();
+        shoulderErrorAccumulation = NetworkTableInstance.getDefault().getTable("AdvantageKit").getDoubleTopic("arm/shoulder/Shoulder Accumulated Error").publish();
 
         shoulderFeedforwardVoltage = shoulderFeedforward.calculate((getShoulderPosition()).in(Radians), getShoulderVelocity().in(RadiansPerSecond));
         
         wristController = new PIDController(ArmConstants.WRIST_P, ArmConstants.WRIST_I, ArmConstants.WRIST_D);
-        wristController.setTolerance(0.005);
+        wristController.setTolerance(8.0/360);
         wristController.setIZone(ArmConstants.WRIST_IZ);
         shoulderController = new PIDController(ArmConstants.SHOULDER_P, ArmConstants.SHOULDER_I, ArmConstants.SHOULDER_D);
         shoulderController.setTolerance(0.005);
