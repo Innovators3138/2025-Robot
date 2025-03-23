@@ -147,7 +147,10 @@ public class Vision {
        */
       visionSim.update(swerveDrive.getSimulationDriveTrainPose().get());
       posePublisher.set(swerveDrive.getSimulationDriveTrainPose().get());
+    } else {
+      posePublisher.set(swerveDrive.getPose());
     }
+    
     for (Cameras camera : Cameras.values()) {
       Optional<EstimatedRobotPose> poseEst = getEstimatedGlobalPose(camera);
       if (poseEst != null && poseEst.isPresent()) {
@@ -439,9 +442,9 @@ public class Vision {
     CENTER_CAM("Arducam_0001",
         new Rotation3d(0, Units.degreesToRadians(-20), 0),
         new Translation3d(
-            Units.inchesToMeters(9),
+            Units.inchesToMeters(8.629),
             Units.inchesToMeters(0),
-            Units.inchesToMeters(7.25)
+            Units.inchesToMeters(7.144)
           ),
         VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
 

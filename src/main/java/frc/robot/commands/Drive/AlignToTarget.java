@@ -20,9 +20,9 @@ public class AlignToTarget extends Command {
     private final CommandXboxController m_controller;
     private final SwerveSubsystem m_swerveSubsystem;
     private final PIDController m_rotationController = new PIDController(0.2, 0, 0);
-    private final PIDController m_strafeController = new PIDController(2.5, 0, 0);
-    private final PIDController m_rangeController = new PIDController(2.5, 0, 0);
-    private final double MAX_VELOCITY = MetersPerSecond.of(1).magnitude();
+    private final PIDController m_strafeController = new PIDController(3, 0, 0);
+    private final PIDController m_rangeController = new PIDController(3, 0, 0);
+    private final double MAX_VELOCITY = MetersPerSecond.of(.5).magnitude();
     private final double MAX_ANGULAR_VELOCITY = Units.degreesToRadians(45);
     
     // note that this is the distance from the camera to the target, not the front bumper

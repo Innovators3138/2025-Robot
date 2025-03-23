@@ -42,7 +42,6 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swervedrive.Vision.Cameras;
 import java.io.File;
 import java.io.IOException;
-import java.lang.StackWalker.Option;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -92,10 +91,16 @@ public class SwerveSubsystem extends SubsystemBase {
     // objects being created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try {
-      swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.MAX_SPEED,
-          new Pose2d(new Translation2d(Meter.of(1),
-              Meter.of(4)),
-              Rotation2d.fromDegrees(0)));
+      swerveDrive = new SwerveParser(directory).createSwerveDrive(
+        Constants.MAX_SPEED,
+        new Pose2d(
+          new Translation2d(
+            Meter.of(16),
+            Meter.of(4)
+          ),
+          Rotation2d.fromDegrees(180)
+        )
+      );
       // Alternative method if you don't want to supply the conversion factor via JSON
       // files.
       // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
@@ -618,6 +623,10 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public Rotation2d getHeading() {
     return getPose().getRotation();
+  }
+
+  public Rotation2d getRawHeading() {
+    return swerveDrive.getYaw();
   }
 
   /**

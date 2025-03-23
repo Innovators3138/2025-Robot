@@ -1,30 +1,23 @@
 package frc.robot.commands.Drive;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import swervelib.SwerveDrive;
 
 public class BumpReef extends Command {
-    private final double CAMERA_TO_BUMPER = Units.inchesToMeters(12);
+    private final AngularVelocity MAX_ANGULAR_VELOCITY = DegreesPerSecond.of(10);
     private final LinearVelocity BUMP_VELOCITY = MetersPerSecond.of(0.25);
     private final SwerveSubsystem m_swerveSubsystem;
-    private Pose2d m_bumpPose;
+    private final PIDController m_headingController = new PIDController(0.001, 0, 0);
     private int m_count;
-
-    private final DoublePublisher m_bumpRangePublisher = NetworkTableInstance.getDefault()
-            .getTable("SmartDashboard")
-            .getDoubleTopic("vision/align/bumpRange")
-            .publish();
+    private double m_originalHeading;
 
     public BumpReef(SwerveSubsystem swerveSubsystem) {
         m_swerveSubsystem = swerveSubsystem;
@@ -34,62 +27,51 @@ public class BumpReef extends Command {
     @Override
     public void initialize() {
         m_count = 0;
-        var target = m_swerveSubsystem.getBestReefTargetForAlignment();
-        if (target.isEmpty()) {
-            return;
-        }
-
-        var targetTransform = target.get().getBestCameraToTarget();
-        var robotPose = m_swerveSubsystem.getPose();
-        var driveDistance = targetTransform.getX() - CAMERA_TO_BUMPER;
-
-        m_bumpRangePublisher.set(driveDistance);
-
-        m_bumpPose = robotPose
-                .transformBy(
-                        new Transform2d(
-                                new Translation2d(
-                                        driveDistance,
-                                        0),
-                                Rotation2d.kZero));
+        m_originalHeading = m_swerveSubsystem.getRawHeading().getDegrees();
+        m_headingController.reset();
     }
 
     @Override
     public void execute() {
         m_count++;
-        if (m_bumpPose == null) {
-            return;
+        
+        var currentHeading = m_swerveSubsystem.getRawHeading().getDegrees();
+        var headingDrift = m_originalHeading - currentHeading;
+        if (headingDrift < -180) {
+            currentHeading = currentHeading - 360;
+            headingDrift = m_originalHeading - currentHeading;
         }
 
+        if (headingDrift > 180) {
+            currentHeading = currentHeading + 360;
+            headingDrift = m_originalHeading - currentHeading;
+        }
+
+        var angularVelocity = MathUtil.clamp(
+            m_headingController.calculate(headingDrift),
+            -MAX_ANGULAR_VELOCITY.in(DegreesPerSecond),
+            MAX_ANGULAR_VELOCITY.in(DegreesPerSecond));
+
         m_swerveSubsystem.drive(
-                new Translation2d(BUMP_VELOCITY.in(MetersPerSecond), 0),
-                0, false);
+            new Translation2d(
+                BUMP_VELOCITY.in(MetersPerSecond),
+                0
+            ),
+            -angularVelocity,
+            false
+        );
     }
 
     @Override
     public void end(boolean interrupted) {
         m_swerveSubsystem.drive(
             new Translation2d(0, 0),
-            0, false);
-            
-        if (m_bumpPose == null) {
-            return;
-        }
-
-        m_bumpPose = null;
+            0, false
+        );
     }
 
     @Override
     public boolean isFinished() {
-        if (m_count > 100) {
-            return true;
-        }
-
-        if (m_bumpPose == null) {
-            return true;
-        }
-
-        var distance = m_bumpPose.getTranslation().getDistance(m_swerveSubsystem.getPose().getTranslation());
-        return Math.abs(distance) < 0.01;
+        return m_count > 100;
     }
 }

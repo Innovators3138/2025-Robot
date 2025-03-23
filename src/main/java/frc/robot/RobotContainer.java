@@ -99,7 +99,6 @@ public class RobotContainer {
       () -> driverXbox.getLeftY() * -1,
       () -> driverXbox.getLeftX() * -1)
       .withControllerRotationAxis(driverXbox::getRightX)
-      .scaleRotation(0.001)
       .deadband(OperatorConstants.DEADBAND)
       .scaleTranslation(0.8)
       .allianceRelativeControl(true);
@@ -195,12 +194,9 @@ public class RobotContainer {
 
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     
-    setupRightStickAuton();
-    
     driverXbox.a().onTrue(
       new SequentialCommandGroup(
-        new DriveToReefPosition(ReefPosition.Nearest, drivebase),
-        new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
+        new DriveToReefPosition(ReefPosition.Nearest, drivebase)
       )
     );
 
@@ -296,21 +292,14 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-
-    return new ParallelCommandGroup(
-      new SetToLevelOne(m_elevator, m_arm),
-      new SequentialCommandGroup(
-  
-        new WaitCommand(2),
-        
-        
-        new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase),
-        new BumpReef(drivebase),
-        new ReleaseGamepiece(m_GripperSubsystem),
-        new ReverseReef(drivebase)
-        
-
-    ));
+    return new SequentialCommandGroup(
+      new DriveToReefPosition(ReefPosition._6oClock, drivebase),
+      new SetToLevelOne(m_elevator, m_arm, true),
+      new AlignToTarget(TargetAlignment.Left, driverXbox, drivebase),
+      new BumpReef(drivebase),
+      new ReleaseGamepiece(m_GripperSubsystem),
+      new ReverseReef(drivebase)
+    );
     // An example command will be run in autonomous
     // return drivebase.getAutonomousCommand("Left Side L");
     // return drivebase.getAutonomousCommand("Center L1");
