@@ -122,6 +122,15 @@ public class ClimbSubsystem extends SubsystemBase {
         return m_pidController.atSetpoint(); 
     }
 
+    public void enableRatchet() 
+    {
+        //TODO
+    }
+    public void disableRatchet()
+    {
+        //TODO
+    }
+
 
     public AngularVelocity getClimbVelocity()
     {

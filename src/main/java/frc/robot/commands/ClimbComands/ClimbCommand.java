@@ -1,10 +1,11 @@
 package frc.robot.commands.ClimbComands;
 
-import frc.robot.Constants.ClimberConstants;
+import frc.robot.Constants.*;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import static edu.wpi.first.units.Units.*;
 
 public class ClimbCommand extends Command {
     private int m_activateClimberCountdown = 0;
@@ -12,6 +13,7 @@ public class ClimbCommand extends Command {
     private CommandXboxController m_operatorController;
     private final ClimbSubsystem m_climbSubsystem;
     private boolean m_climberActivationInProgress = false;
+    private boolean m_ratchetEnabled = false;
 
     
 
@@ -46,9 +48,11 @@ public class ClimbCommand extends Command {
         }
         else if (!m_climbSubsystem.IsActivated())
         {
-            if ((m_driveController.getLeftTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL) && 
-                (m_driveController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL)) {
-                if (m_activateClimberCountdown == 0) {
+            if (m_operatorController.leftBumper().getAsBoolean() && 
+                m_operatorController.rightBumper().getAsBoolean()) 
+            {
+                if (m_activateClimberCountdown == 0) 
+                {
                     m_climberActivationInProgress = true;
                     System.out.println("Climber Activated");
                 } else {
@@ -60,22 +64,53 @@ public class ClimbCommand extends Command {
         }
         else //Climber is activated
         {
-            if ((m_operatorController.getLeftTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL) && 
-                (m_operatorController.getRightTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
+            // if ((m_operatorController.getLeftTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL) && 
+            //     (m_operatorController.getRightTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
+            // { 
+            //     //Use left trigger
+            //     m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.STOW_ANGLE);
+            // }
+            // else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL) && 
+            //         (m_operatorController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
+            // {
+            //     //use right trigger
+            //     m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.CLIMB_ANGLE);
+            // }
+            // else
+            // {
+            //     m_climbSubsystem.updatePIDToMaintainSetPoint();
+            // }
+
+            if ((m_operatorController.getLeftTriggerAxis() >= GripperConstants.TRIGGER_DEADZONE) &&  //button to raise robot using climber
+                (m_operatorController.getRightTriggerAxis() < GripperConstants.TRIGGER_DEADZONE))
             { 
-                //Use left trigger
-                m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.STOW_ANGLE);
+                if (!m_ratchetEnabled) //turn on ratchet when climbing
+                {
+                    m_climbSubsystem.enableRatchet();
+                    m_ratchetEnabled = true;
+                }
+
+                if (m_climbSubsystem.getClimberPosition().in(Rotations) <= ClimberConstants.CLIMB_ANGLE.in(Rotations)) //TODO < > orientation on this
+                {
+                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
+                }
             }
-            else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL) && 
+            else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL) &&  //button to lower robot using climber
                     (m_operatorController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
             {
-                //use right trigger
-                m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.CLIMB_ANGLE);
+                if (m_ratchetEnabled)  //remove ratchet to descend
+                {
+                    m_climbSubsystem.disableRatchet();
+                    m_ratchetEnabled = false;
+                }
+
+                if (m_climbSubsystem.getClimberPosition().in(Rotations) >= ClimberConstants.STOW_ANGLE.in(Rotations))  //TODO < > orientation on this
+                {
+                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
+                }
             }
-            else
-            {
-                m_climbSubsystem.updatePIDToMaintainSetPoint();
-            }
+
+            
         }
     }
 
