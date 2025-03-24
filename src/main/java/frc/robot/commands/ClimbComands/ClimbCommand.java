@@ -35,6 +35,8 @@ public class ClimbCommand extends Command {
         return false;  //run forever
     }
 
+    private int testCounter = 0;
+
     public void execute() {
         if (m_climberActivationInProgress)
         {
@@ -48,6 +50,21 @@ public class ClimbCommand extends Command {
         }
         else if (!m_climbSubsystem.IsActivated())
         {
+            --testCounter;
+            if (testCounter >= 250)
+            {
+                //m_climbSubsystem.enableRatchet();
+            }
+            else if (testCounter > 0)
+            {
+                //m_climbSubsystem.disableRatchet();
+            }
+            else if (testCounter == 0)
+            {
+                testCounter = 500;
+            }
+
+
             if (m_operatorController.leftBumper().getAsBoolean() && 
                 m_operatorController.rightBumper().getAsBoolean()) 
             {

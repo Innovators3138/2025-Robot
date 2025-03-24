@@ -3,6 +3,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Servo;
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,6 +31,7 @@ public class ClimbSubsystem extends SubsystemBase {
     private final CANdiEncoder m_climberEncoder;
     private final PWM1Configs m_climberPWMConfig = new PWM1Configs();
     private PIDController m_pidController;
+    private Servo m_ratchetServo;
 
     private final DoublePublisher m_positionPublisher;
     private final DoublePublisher m_velocityPublisher;
@@ -39,6 +41,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public ClimbSubsystem(CANdi candi) {
         
+        m_ratchetServo = new Servo(ClimberConstants.RATCHET_SERVO_CHAN_NUM);
         m_climbMotor = new ClimberSpark(m_climbMotorController, m_climbConfig, DCMotor.getNeo550(1));
 
         m_climberPWMConfig.withAbsoluteSensorDiscontinuityPoint(ClimberConstants.ABSOLUTE_SENSOR_DISCONTINUITY_POINT);
@@ -124,11 +127,11 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public void enableRatchet() 
     {
-        //TODO
+        m_ratchetServo.set(0.1);
     }
     public void disableRatchet()
     {
-        //TODO
+        m_ratchetServo.set(0.0);
     }
 
 
