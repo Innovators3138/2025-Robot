@@ -17,7 +17,7 @@ import frc.robot.utils.PIDFConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.ctre.phoenix6.configs.PWM1Configs;
+import com.ctre.phoenix6.configs.PWM2Configs;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -29,7 +29,7 @@ public class ClimbSubsystem extends SubsystemBase {
     private SparkBaseConfig m_climbConfig = new SparkMaxConfig();
     private boolean m_Activated = false;
     private final CANdiEncoder m_climberEncoder;
-    private final PWM1Configs m_climberPWMConfig = new PWM1Configs();
+    private final PWM2Configs m_climberPWMConfig = new PWM2Configs();
     private PIDController m_pidController;
     private Servo m_ratchetServo;
 
