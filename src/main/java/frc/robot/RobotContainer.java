@@ -236,11 +236,11 @@ public class RobotContainer {
       operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake
 
 
-      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));
+      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, m_climbSubsystem, operatorXbox));
       //m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
 
       //this uses trigger on driver controller to test the climb mechanism movements with touch sensitivity
-      m_climbSubsystem.setDefaultCommand(new RunClimbTester(m_climbSubsystem, driverXbox));
+      m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
 
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());

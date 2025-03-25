@@ -174,7 +174,7 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
     public static final double TRIGGER_ACTIVATION_LEVEL = 0.9;
 
-    public static final int RATCHET_SERVO_CHAN_NUM = 0;
+    public static final int RATCHET_SERVO_CHAN_NUM = 1;
   }
 
   public static final class ElevatorConstants {

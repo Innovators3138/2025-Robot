@@ -29,6 +29,7 @@ public class ClimbCommand extends Command {
         m_climbSubsystem.stopAllMotionAndClearPIDInfo();
         m_activateClimberCountdown = 150;
         m_climberActivationInProgress = false;
+        System.out.println("Initialized climb command");
     }
 
     public boolean isFinished() {
@@ -38,10 +39,11 @@ public class ClimbCommand extends Command {
     private int testCounter = 0;
 
     public void execute() {
+        System.out.println("In execute: climbcommand");
         if (m_climberActivationInProgress)
         {
-            m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.RELEASE_ANGLE);
-            if (m_climbSubsystem.atSetPoint())
+            //m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.RELEASE_ANGLE);
+            //if (m_climbSubsystem.atSetPoint())
             {
                 m_climbSubsystem.stopAllMotionAndClearPIDInfo();
                 m_climbSubsystem.markClimberActivated();
@@ -50,14 +52,17 @@ public class ClimbCommand extends Command {
         }
         else if (!m_climbSubsystem.IsActivated())
         {
-            --testCounter;
             if (testCounter >= 250)
             {
-                //m_climbSubsystem.enableRatchet();
+                System.out.println("Enabling ratchet");
+                m_climbSubsystem.enableRatchet();
+                --testCounter;
             }
             else if (testCounter > 0)
             {
-                //m_climbSubsystem.disableRatchet();
+                System.out.println("Disabling ratchet");
+                m_climbSubsystem.disableRatchet();
+                --testCounter;
             }
             else if (testCounter == 0)
             {
@@ -111,6 +116,10 @@ public class ClimbCommand extends Command {
                 {
                     m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
                 }
+                else
+                {
+                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
+                }
             }
             else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL) &&  //button to lower robot using climber
                     (m_operatorController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
@@ -125,6 +134,13 @@ public class ClimbCommand extends Command {
                 {
                     m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
                 }
+                else{
+                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
+                }
+            }
+            else
+            {
+                m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
             }
 
             

@@ -127,11 +127,11 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public void enableRatchet() 
     {
-        m_ratchetServo.set(0.1);
+        m_ratchetServo.set(1.0);
     }
     public void disableRatchet()
     {
-        m_ratchetServo.set(0.0);
+        m_ratchetServo.set(0.5);
     }
 
 
