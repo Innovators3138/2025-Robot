@@ -36,10 +36,7 @@ public class ClimbCommand extends Command {
         return false;  //run forever
     }
 
-    private int testCounter = 0;
-
     public void execute() {
-        System.out.println("In execute: climbcommand");
         if (m_climberActivationInProgress)
         {
             //m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.RELEASE_ANGLE);
@@ -52,23 +49,6 @@ public class ClimbCommand extends Command {
         }
         else if (!m_climbSubsystem.IsActivated())
         {
-            if (testCounter >= 250)
-            {
-                System.out.println("Enabling ratchet");
-                m_climbSubsystem.enableRatchet();
-                --testCounter;
-            }
-            else if (testCounter > 0)
-            {
-                System.out.println("Disabling ratchet");
-                m_climbSubsystem.disableRatchet();
-                --testCounter;
-            }
-            else if (testCounter == 0)
-            {
-                testCounter = 500;
-            }
-
 
             if (m_operatorController.leftBumper().getAsBoolean() && 
                 m_operatorController.rightBumper().getAsBoolean()) 
@@ -103,22 +83,25 @@ public class ClimbCommand extends Command {
             //     m_climbSubsystem.updatePIDToMaintainSetPoint();
             // }
 
-            if ((m_operatorController.getLeftTriggerAxis() >= GripperConstants.TRIGGER_DEADZONE) &&  //button to raise robot using climber
-                (m_operatorController.getRightTriggerAxis() < GripperConstants.TRIGGER_DEADZONE))
+            double climberSpeed = 0.0; //-1 to 1;  0 is no movement
+
+            if ((m_operatorController.getLeftTriggerAxis() >= ClimberConstants.TRIGGER_DEADZONE) &&  //button to raise robot using climber
+                (m_operatorController.getRightTriggerAxis() < ClimberConstants.TRIGGER_DEADZONE))
             { 
                 if (!m_ratchetEnabled) //turn on ratchet when climbing
                 {
+                    System.out.println("Enabling ratchet");
                     m_climbSubsystem.enableRatchet();
                     m_ratchetEnabled = true;
                 }
 
-                if (m_climbSubsystem.getClimberPosition().in(Rotations) <= ClimberConstants.CLIMB_ANGLE.in(Rotations)) //TODO < > orientation on this
+                if (m_climbSubsystem.getClimberPosition().in(Rotations) >= ClimberConstants.CLIMB_ANGLE.in(Rotations))
                 {
-                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
+                    climberSpeed = -0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0);
                 }
                 else
                 {
-                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
+                    System.out.println("Rejecting climb up command because position is less than " + ClimberConstants.CLIMB_ANGLE.in(Rotations) + " Position is " + m_climbSubsystem.getClimberPosition().in(Rotations));
                 }
             }
             else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_DEADZONE) &&  //button to lower robot using climber
@@ -126,24 +109,22 @@ public class ClimbCommand extends Command {
             {
                 if (m_ratchetEnabled)  //remove ratchet to descend
                 {
+                    System.out.println("Disabling ratchet");
                     m_climbSubsystem.disableRatchet();
                     m_ratchetEnabled = false;
                 }
 
-                if (m_climbSubsystem.getClimberPosition().in(Rotations) >= ClimberConstants.STOW_ANGLE.in(Rotations))  //TODO < > orientation on this
+                if (m_climbSubsystem.getClimberPosition().in(Rotations) <= ClimberConstants.READY_ANGLE.in(Rotations)) 
                 {
-                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(-0.5 * Math.pow(m_operatorController.getRightTriggerAxis(), 2.0));
+                    climberSpeed = 0.25 * Math.pow(m_operatorController.getRightTriggerAxis(), 2.0);
                 }
-                else{
-                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
+                else
+                {
+                    System.out.println("Rejecting climb down command because position is greater than " + ClimberConstants.READY_ANGLE.in(Rotations) + " Position is " + m_climbSubsystem.getClimberPosition().in(Rotations));
                 }
-            }
-            else
-            {
-                m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
             }
 
-            
+            m_climbSubsystem.bypassPIDAndSetSpeedDirectly(climberSpeed);
         }
     }
 

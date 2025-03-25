@@ -92,9 +92,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
 
         m_elevatorMotor.setVoltageCompensation(Constants.NOMINAL_VOLTAGE);
-        m_elevatorMotor.setCurrentLimit(ArmConstants.SHOULDER_MOTOR_CURRENT_LIMIT);
-        m_elevatorMotor.setLoopRampRate(ArmConstants.SHOULDER_MOTOR_RAMP_RATE);
-        m_elevatorMotor.setInverted(ArmConstants.SHOULDER_MOTOR_IS_INVERTED);
+        m_elevatorMotor.setCurrentLimit(ElevatorConstants.ELEVATOR_MOTOR_CURRENT_LIMIT);
+        m_elevatorMotor.setLoopRampRate(ElevatorConstants.ELEVATOR_MOTOR_RAMP_RATE);
+        m_elevatorMotor.setInverted(false);
         m_elevatorMotor.setMotorBrake(true);
         m_elevatorMotor.burnFlash();
 

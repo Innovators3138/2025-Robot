@@ -54,9 +54,9 @@ public class ClimbSubsystem extends SubsystemBase {
         m_climberEncoder = new CANdiEncoder(candi, 2);
 
         m_climbMotor.setVoltageCompensation(Constants.NOMINAL_VOLTAGE);
-        m_climbMotor.setCurrentLimit(ArmConstants.SHOULDER_MOTOR_CURRENT_LIMIT);
-        m_climbMotor.setLoopRampRate(ArmConstants.SHOULDER_MOTOR_RAMP_RATE);
-        m_climbMotor.setInverted(ArmConstants.SHOULDER_MOTOR_IS_INVERTED);
+        m_climbMotor.setCurrentLimit(ClimberConstants.CLIMBER_MOTOR_CURRENT_LIMIT);
+        m_climbMotor.setLoopRampRate(ClimberConstants.CLIMBER_MOTOR_RAMP_RATE);
+        m_climbMotor.setInverted(ClimberConstants.CLIMBER_MOTOR_IS_INVERTED);
         m_climbMotor.setMotorBrake(true);
         m_climbMotor.burnFlash();
 
@@ -82,25 +82,12 @@ public class ClimbSubsystem extends SubsystemBase {
     {
         double voltage = m_pidController.calculate(getClimberPosition().in(Rotations));
 
-        if (Constants.ClimberConstants.MOTOR_IS_INVERTED)
-        {
-            voltage *= -1;
-        }
-
-        //enforce max voltage allowed for the motor
-        voltage = Math.max(Constants.NOMINAL_VOLTAGE, voltage);
-        voltage = Math.min(Constants.NOMINAL_VOLTAGE, voltage);
-
         m_climbMotor.setVoltage(voltage);
     }
 
-    public void bypassPIDAndSetSpeedDirectly(double speed)
+    public void bypassPIDAndSetSpeedDirectly(double speed) //negative speed moves towards climb position;  positive speed moves away from climb position
     {
         m_pidController.reset();
-
-        double voltage = speed * Constants.NOMINAL_VOLTAGE;
-        voltage = Math.max(Constants.NOMINAL_VOLTAGE, voltage);
-        voltage = Math.min(Constants.NOMINAL_VOLTAGE, voltage);
 
         m_climbMotor.setVoltage(speed * Constants.NOMINAL_VOLTAGE);
     }
