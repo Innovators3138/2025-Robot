@@ -94,15 +94,15 @@ public class ClimbSubsystem extends SubsystemBase {
 
     public void setClimberPositionAndUpdatePID(Angle setPoint)
     {
-        if ((setPoint.in(Rotations) < ClimberConstants.MAX_ANGLE.in(Rotations)) && 
-            (setPoint.in(Rotations) > ClimberConstants.MIN_ANGLE.in(Rotations)))
+        //if ((setPoint.in(Rotations) <= ClimberConstants.MAX_ANGLE.in(Rotations)) && 
+        //    (setPoint.in(Rotations) >= ClimberConstants.MIN_ANGLE.in(Rotations)))
         {
             m_pidController.setSetpoint(setPoint.in(Rotations));
         }
-        else
-        {
-            System.out.println("Illegal climber set point provided: " + setPoint.in(Rotations));
-        }
+        // else
+        // {
+        //     System.out.println("Illegal climber set point provided: " + setPoint.in(Rotations));
+        // }
 
         updatePIDToMaintainSetPoint();
     }

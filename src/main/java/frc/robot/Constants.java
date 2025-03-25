@@ -165,8 +165,8 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
     public static final double ABSOLUTE_SENSOR_DISCONTINUITY_POINT = 0.3;
     public static final double ABSOLUTE_SENSOR_OFFSET = 0.225;
 
-    public static final double CLIMBER_P = 1.0;
-    public static final double CLIMBER_I = 0.02;
+    public static final double CLIMBER_P = 50.0;
+    public static final double CLIMBER_I = 1;
     public static final double CLIMBER_D = 0.0;
     public static final double PID_TOLERANCE_ROTATIONS = 8.0/360.0;
     public static final double PID_IZONE_ROTATIONS = 5.0/360.0;

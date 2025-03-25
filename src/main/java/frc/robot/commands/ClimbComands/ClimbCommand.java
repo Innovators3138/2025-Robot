@@ -1,3 +1,4 @@
+
 package frc.robot.commands.ClimbComands;
 
 import frc.robot.Constants.*;
@@ -14,6 +15,7 @@ public class ClimbCommand extends Command {
     private final ClimbSubsystem m_climbSubsystem;
     private boolean m_climberActivationInProgress = false;
     private boolean m_ratchetEnabled = false;
+    private int m_safetyActivationCounter = 200; //200 * 20 msec = 4 seconds
 
     
 
@@ -28,6 +30,7 @@ public class ClimbCommand extends Command {
     public void initialize() {
         m_climbSubsystem.stopAllMotionAndClearPIDInfo();
         m_activateClimberCountdown = 150;
+        m_safetyActivationCounter = 200;
         m_climberActivationInProgress = false;
         System.out.println("Initialized climb command");
     }
@@ -39,13 +42,31 @@ public class ClimbCommand extends Command {
     public void execute() {
         if (m_climberActivationInProgress)
         {
-            //m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.RELEASE_ANGLE);
-            //if (m_climbSubsystem.atSetPoint())
+            if (m_climbSubsystem.getClimberPosition().in(Rotations) <= ClimberConstants.READY_ANGLE.in(Rotations) &&
+                (m_safetyActivationCounter > 0)) 
             {
-                m_climbSubsystem.stopAllMotionAndClearPIDInfo();
+                m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.25);
+                --m_safetyActivationCounter;
+
+                System.out.println("Disabling ratchet");
+                m_climbSubsystem.disableRatchet();
+                m_ratchetEnabled = false;
+                
+            }
+            else
+            {
+                m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
                 m_climbSubsystem.markClimberActivated();
                 m_climberActivationInProgress = false;
             }
+
+            // m_climbSubsystem.setClimberPositionAndUpdatePID(ClimberConstants.READY_ANGLE);
+            // if (m_climbSubsystem.atSetPoint())
+            // {
+            //     m_climbSubsystem.stopAllMotionAndClearPIDInfo();
+            //     m_climbSubsystem.markClimberActivated();
+            //     m_climberActivationInProgress = false;
+            // }
         }
         else if (!m_climbSubsystem.IsActivated())
         {
