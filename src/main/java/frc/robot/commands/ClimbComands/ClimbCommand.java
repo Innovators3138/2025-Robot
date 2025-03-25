@@ -121,8 +121,8 @@ public class ClimbCommand extends Command {
                     m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
                 }
             }
-            else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_ACTIVATION_LEVEL) &&  //button to lower robot using climber
-                    (m_operatorController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_ACTIVATION_LEVEL))
+            else if ((m_operatorController.getLeftTriggerAxis() < ClimberConstants.TRIGGER_DEADZONE) &&  //button to lower robot using climber
+                    (m_operatorController.getRightTriggerAxis() >= ClimberConstants.TRIGGER_DEADZONE))
             {
                 if (m_ratchetEnabled)  //remove ratchet to descend
                 {
@@ -132,7 +132,7 @@ public class ClimbCommand extends Command {
 
                 if (m_climbSubsystem.getClimberPosition().in(Rotations) >= ClimberConstants.STOW_ANGLE.in(Rotations))  //TODO < > orientation on this
                 {
-                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.5 * Math.pow(m_operatorController.getLeftTriggerAxis(), 2.0));
+                    m_climbSubsystem.bypassPIDAndSetSpeedDirectly(-0.5 * Math.pow(m_operatorController.getRightTriggerAxis(), 2.0));
                 }
                 else{
                     m_climbSubsystem.bypassPIDAndSetSpeedDirectly(0.0);
