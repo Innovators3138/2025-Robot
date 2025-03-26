@@ -152,7 +152,7 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
   }
 
   public static final class ClimberConstants {
-    public static final Angle CLIMB_ANGLE = Rotations.of(-0.237);
+    public static final Angle CLIMB_ANGLE = Rotations.of(-0.178);
     public static final Angle STOW_ANGLE = Rotations.of(-0.137);
     public static final Angle READY_ANGLE = Rotations.of(-0.122);
     public static final Angle MIN_ANGLE = Rotations.of(Math.min(CLIMB_ANGLE.in(Rotations), STOW_ANGLE.in(Rotations)));
