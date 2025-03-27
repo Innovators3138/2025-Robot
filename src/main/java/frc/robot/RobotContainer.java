@@ -31,34 +31,9 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.gripper.GripperSubsystem;
-import frc.robot.commands.ClimbComands.ClimbCommand;
-import frc.robot.commands.ClimbComands.StopClimbing;
-import frc.robot.commands.Drive.DriveToLoader;
-import frc.robot.commands.Drive.DriveToReefPosition;
-import frc.robot.commands.Drive.LoaderPosition;
-import frc.robot.commands.Drive.PositionRobot;
-import frc.robot.commands.Drive.RelativePosition;
-import frc.robot.commands.Drive.ReverseReef;
-import frc.robot.commands.Drive.AlignToTarget;
-import frc.robot.commands.Drive.BumpReef;
-import frc.robot.commands.Drive.RotateRobot;
-import frc.robot.commands.Drive.RotationDirection;
-import frc.robot.commands.Drive.ReefPosition;
-import frc.robot.commands.Drive.RotateRobot;
-import frc.robot.commands.Drive.Stop;
-import frc.robot.commands.Drive.TargetAlignment;
-import frc.robot.commands.ArmLevel;
-import frc.robot.commands.IntakeGamepiece;
-import frc.robot.commands.MoveElevator;
-import frc.robot.commands.MoveWrist;
-import frc.robot.commands.ReleaseGamepiece;
-import frc.robot.commands.MoveShoulder;
-import frc.robot.commands.RunGripper;
-import frc.robot.commands.MoveShoulderAndWrist;
-import frc.robot.commands.SetToLevelOne;
-import frc.robot.commands.SetToLevelTwo;
-import frc.robot.commands.SetToLevelThree;
-import frc.robot.commands.SetToLevelFour;
+import frc.robot.commands.ClimbComands.*;
+import frc.robot.commands.Drive.*;
+import frc.robot.commands.*;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.arm.Arm;
@@ -150,7 +125,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(elevatorCANdi);
-  private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem();
+  private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem(elevatorCANdi);
   private static final String autoDefault = "Drive Forward";
   private static final String autoDoNothing = "Do Nothing";
   private static final String autoLeftSideL1 = "Left Side L1";
@@ -231,12 +206,6 @@ public class RobotContainer {
     driverXbox.povRight().whileTrue(new PositionRobot(RelativePosition.Right, drivebase));
     driverXbox.povUp().whileTrue(new PositionRobot(RelativePosition.Forward, drivebase));
     driverXbox.povDown().whileTrue(new PositionRobot(RelativePosition.Back, drivebase));
-
-    driverXbox.rightTrigger()
-      .whileTrue(new RotateRobot(RotationDirection.Clockwise, drivebase));
-
-    driverXbox.leftTrigger()
-      .whileTrue(new RotateRobot(RotationDirection.CounterClockwise, drivebase));
     
     if (Robot.isSimulation()) {
       driverXbox.start().onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
@@ -270,19 +239,13 @@ public class RobotContainer {
 
       //operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem).andThen(new WaitCommand(0.5)).andThen(new SetToLevelOne(m_elevator, m_arm)));
       operatorXbox.rightStick().onTrue(new IntakeGamepiece(m_elevator, m_arm, m_GripperSubsystem)); //run intake
-      
-      //operatorXbox.x().onTrue(new MoveWrist(arm, Rotations.of(0.112)).repeatedly());
-      //operatorXbox.b().onTrue(new MoveWrist(arm, Rotations.of(0.002)).repeatedly());
-      //operatorXbox.y().onTrue(new RunGripper(m_GripperSubsystem, 0.3 ).repeatedly());
-      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, operatorXbox));
-      //operatorXbox.leftBumper().onTrue(new RunGripper(m_GripperSubsystem, 0.1).repeatedly());
-      //operatorXbox.rightBumper().onTrue(new RunGripper(m_GripperSubsystem, 1).repeatedly());
-      //operatorXbox.leftBumper().onFalse(new RunGripper(m_GripperSubsystem, 0.0).repeatedly());
-      //operatorXbox.rightBumper().onFalse(new RunGripper(m_GripperSubsystem, 0.0).repeatedly());
-      //operatorXbox.a().onTrue(new SetToLevelOne(m_elevator, arm));
-      //operatorXbox.x().onTrue(new SetToLevelTwo(m_elevator, arm));
-      //operatorXbox.b().onTrue(new SetToLevelThree(m_elevator, arm));
-      //operatorXbox.y().onTrue(new SetToLevelFour(m_elevator, arm));
+
+
+      m_GripperSubsystem.setDefaultCommand(new RunGripper(m_GripperSubsystem, m_climbSubsystem, operatorXbox));
+      //m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
+
+      //this uses trigger on driver controller to test the climb mechanism movements with touch sensitivity
+      m_climbSubsystem.setDefaultCommand(new ClimbCommand(m_climbSubsystem, driverXbox, operatorXbox));
 
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());

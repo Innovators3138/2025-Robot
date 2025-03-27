@@ -151,6 +151,37 @@ public static final double LOWER_INTAKE_BAR_SPEED = 0.5;
 
   }
 
+  public static final class ClimberConstants {
+    public static final Angle CLIMB_ANGLE = Rotations.of(-0.178);
+    public static final Angle STOW_ANGLE = Rotations.of(-0.137);
+    public static final Angle READY_ANGLE = Rotations.of(-0.122);
+    public static final Angle MIN_ANGLE = Rotations.of(Math.min(CLIMB_ANGLE.in(Rotations), STOW_ANGLE.in(Rotations)));
+    public static final Angle MAX_ANGLE = Rotations.of(Math.max(CLIMB_ANGLE.in(Rotations), STOW_ANGLE.in(Rotations)));
+
+    public static final double TRIGGER_DEADZONE = 0.05;
+
+
+    public static final boolean ENCODER_IS_INVERTED = false;
+    public static final double ABSOLUTE_SENSOR_DISCONTINUITY_POINT = 0.3;
+    public static final double ABSOLUTE_SENSOR_OFFSET = 0.225;
+
+    public static final double CLIMBER_P = 50.0;
+    public static final double CLIMBER_I = 1;
+    public static final double CLIMBER_D = 0.0;
+    public static final double PID_TOLERANCE_ROTATIONS = 8.0/360.0;
+    public static final double PID_IZONE_ROTATIONS = 5.0/360.0;
+    public static final double PID_MAX_INTEGRATOR = CLIMBER_P / 2.0; //max I-value can be accumulated to
+    public static final double PID_MIN_INTEGRATOR = -1 * CLIMBER_P / 2.0; //min I-value can be accumulated to
+
+    public static final int CLIMBER_MOTOR_CURRENT_LIMIT = 40;
+    public static final double CLIMBER_MOTOR_RAMP_RATE = 0.25;
+    public static final boolean CLIMBER_MOTOR_IS_INVERTED = true;
+
+    public static final double TRIGGER_ACTIVATION_LEVEL = 0.9;
+
+    public static final int RATCHET_SERVO_CHAN_NUM = 1;
+  }
+
   public static final class ElevatorConstants {
     public static final Distance MINIMUM_SAFE_HEIGHT = Inches.of(0.5);
     public static final Distance MINIMUM_SHOULDER_MOVE_SAFE_HEIGHT = Inches.of(10.0); 
