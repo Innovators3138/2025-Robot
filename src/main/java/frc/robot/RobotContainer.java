@@ -126,13 +126,9 @@ public class RobotContainer {
    */
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem(elevatorCANdi);
   private final ClimbSubsystem m_climbSubsystem = new ClimbSubsystem(elevatorCANdi);
-  private static final String autoDefault = "Drive Forward";
-  private static final String autoDoNothing = "Do Nothing";
-  private static final String autoLeftSideL1 = "Left Side L1";
-  private static final String autoCenterL1 = "Center L1";
-  private static final String autoRightSideL1 = "Right Side L1";
+
   private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final SendableChooser<Command> m_chooser = new SendableChooser<>();
 
   public RobotContainer() {
 
@@ -145,11 +141,21 @@ public class RobotContainer {
     NamedCommands.registerCommand("bump_reef", new BumpReef(drivebase));
     NamedCommands.registerCommand("release_gamepiece", new ReleaseGamepiece(m_GripperSubsystem, ArmLevel.One));
     NamedCommands.registerCommand("reverse_reef", new ReverseReef(drivebase));
-    m_chooser.setDefaultOption("Drive Forward", autoDefault);
-    m_chooser.addOption("Do Nothing", autoDoNothing);
-    m_chooser.addOption("Left Side L1", autoLeftSideL1);
-    m_chooser.addOption("Center L1", autoCenterL1);
-    m_chooser.addOption("Right Side L1", autoRightSideL1);
+
+    m_chooser.setDefaultOption(
+      "Score 10 o'clock Level 1",
+      Score(ReefPosition._10oClock, ArmLevel.One, TargetAlignment.Center)
+    );
+
+    m_chooser.setDefaultOption(
+      "Score 12 o'clock Level 1",
+      Score(ReefPosition._12oClock, ArmLevel.One, TargetAlignment.Center)
+    );
+
+    m_chooser.setDefaultOption(
+      "Score 2 o'clock Level 1",
+      Score(ReefPosition._2oClock, ArmLevel.One, TargetAlignment.Center)
+    );
 
     SmartDashboard.putData("Auto choices", m_chooser);
   }
@@ -261,8 +267,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    return m_chooser.getSelected();
+
     // return drivebase.getAutonomousCommand("Score Level 1");
-    return Score(ReefPosition._10oClock, ArmLevel.One, TargetAlignment.Center);
+    //return Score(ReefPosition._10oClock, ArmLevel.One, TargetAlignment.Center);
     // An example command will be run in autonomous
     // return drivebase.getAutonomousCommand("Left Side L");
     // return drivebase.getAutonomousCommand("Center L1");
@@ -273,71 +281,6 @@ public class RobotContainer {
 
   public void setMotorBrake(boolean brake) {
     drivebase.setMotorBrake(brake);
-  }
-
-  private void setupRightStickAuton() {
-    // 12 o'clock (up)
-    driverXbox.axisLessThan(Axis.kRightY.value, -0.95)
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._12oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
-
-    // 2 o'clock (right + up)
-    driverXbox
-      .axisGreaterThan(Axis.kRightX.value, 0.5)
-      .and(driverXbox.axisLessThan(Axis.kRightY.value, -0.5))
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._2oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
-
-    // 4 o'clock (right + down)
-    driverXbox
-      .axisGreaterThan(Axis.kRightX.value, 0.5)
-      .and(driverXbox.axisGreaterThan(Axis.kRightY.value, 0.5))
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._4oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
-
-    // 6 o'clock (down)
-    driverXbox
-      .axisGreaterThan(Axis.kRightY.value, 0.95)
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._6oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
-      
-    // 8 o'clock (left + down)
-    driverXbox
-      .axisLessThan(Axis.kRightX.value, -0.5)
-      .and(driverXbox.axisGreaterThan(Axis.kRightY.value, 0.5))
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._8oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
-
-    // 10 o'clock (left + up)
-    driverXbox
-      .axisLessThan(Axis.kRightX.value, -0.5)
-      .and(driverXbox.axisLessThan(Axis.kRightY.value, -0.5))
-      .onTrue(
-        new SequentialCommandGroup(
-          new DriveToReefPosition(ReefPosition._10oClock, drivebase),
-          new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
-        )
-      );
   }
 
   public Command Score(ReefPosition reefPosition, ArmLevel armLevel, TargetAlignment targetAlignment) {
