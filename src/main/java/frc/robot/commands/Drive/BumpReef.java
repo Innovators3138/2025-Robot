@@ -68,12 +68,15 @@ public class BumpReef extends Command {
 
         m_driftCorrectionPublisher.set(angularVelocity);
 
+        // TODO for now I am not trying to correct the heading using the calculated angular velocity
+        // in testing, I am not sure it helped much.  ATM we enabled heading correcting in the swerve
+        // drive.
         m_swerveSubsystem.drive(
             new Translation2d(
                 BUMP_VELOCITY.in(MetersPerSecond),
                 0
             ),
-            angularVelocity,
+            0,
             false
         );
     }

@@ -25,6 +25,7 @@ public class AlignToTarget extends Command {
     private final double MAX_VELOCITY = MetersPerSecond.of(.5).magnitude();
     private final double MAX_ANGULAR_VELOCITY = Units.degreesToRadians(45);
     private int m_targetId = 0;
+    private int m_count = 0;
     
     // note that this is the distance from the camera to the target, not the front bumper
     private final double IDEAL_RANGE = Units.inchesToMeters(24);
@@ -58,6 +59,8 @@ public class AlignToTarget extends Command {
 
     @Override
     public void initialize() {
+        m_count = 0;
+
         // setup rotation controller
         m_rotationController.reset();
         m_rotationController.setSetpoint(0);
@@ -97,6 +100,8 @@ public class AlignToTarget extends Command {
 
     @Override
     public void execute() {
+        m_count++;
+        
         var target = m_targetId == 0
             ? m_swerveSubsystem.getBestReefTargetForAlignment()
             : m_swerveSubsystem.getTrackedTarget(m_targetId);
@@ -158,6 +163,10 @@ public class AlignToTarget extends Command {
 
     @Override
     public boolean isFinished() {
+        if (m_count > 150) {
+            return true;
+        }
+        
         return m_strafeController.atSetpoint() &&
             m_rotationController.atSetpoint() &&
             m_rangeController.atSetpoint();

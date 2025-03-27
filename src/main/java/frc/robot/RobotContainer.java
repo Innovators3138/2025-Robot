@@ -299,7 +299,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // return drivebase.getAutonomousCommand("Score Level 1");
-    return Score(ReefPosition._6oClock, ArmLevel.Four, TargetAlignment.Left);
+    return Score(ReefPosition._10oClock, ArmLevel.One, TargetAlignment.Center);
     // An example command will be run in autonomous
     // return drivebase.getAutonomousCommand("Left Side L");
     // return drivebase.getAutonomousCommand("Center L1");
