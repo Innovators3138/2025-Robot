@@ -19,11 +19,12 @@ public class AlignToTarget extends Command {
     private final TargetAlignment m_alignment;
     private final CommandXboxController m_controller;
     private final SwerveSubsystem m_swerveSubsystem;
-    private final PIDController m_rotationController = new PIDController(0.2, 0, 0);
+    private final PIDController m_rotationController = new PIDController(0.3, 0, 0);
     private final PIDController m_strafeController = new PIDController(3, 0, 0);
     private final PIDController m_rangeController = new PIDController(3, 0, 0);
     private final double MAX_VELOCITY = MetersPerSecond.of(.5).magnitude();
     private final double MAX_ANGULAR_VELOCITY = Units.degreesToRadians(45);
+    private int m_targetId = 0;
     
     // note that this is the distance from the camera to the target, not the front bumper
     private final double IDEAL_RANGE = Units.inchesToMeters(24);
@@ -87,14 +88,26 @@ public class AlignToTarget extends Command {
         );
 
         m_controller.getHID().setRumble(RumbleType.kBothRumble, 0.1);
+
+        var target = m_swerveSubsystem.getBestReefTargetForAlignment();
+        if (target.isPresent()) {
+            m_targetId = target.get().fiducialId;
+        }
     }
 
     @Override
     public void execute() {
-        var target = m_swerveSubsystem.getBestReefTargetForAlignment();
+        var target = m_targetId == 0
+            ? m_swerveSubsystem.getBestReefTargetForAlignment()
+            : m_swerveSubsystem.getTrackedTarget(m_targetId);
+
         if (target.isEmpty()) {
-            m_targetPublisher.set(0);
+            m_swerveSubsystem.drive(Translation2d.kZero, 0, false);
             return;
+        }
+
+        if (m_targetId == 0) {
+            m_targetId = target.get().fiducialId;
         }
 
         var transform = target.get().getBestCameraToTarget();
@@ -140,9 +153,7 @@ public class AlignToTarget extends Command {
             0, false
         );
 
-        if (interrupted) {
-            return;
-        }
+        m_targetId = 0;
     }
 
     @Override

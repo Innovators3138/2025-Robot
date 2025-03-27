@@ -262,6 +262,20 @@ public class Vision {
     return Optional.empty();
   }
 
+  public Optional<PhotonTrackedTarget> getTrackedTarget(int id) {
+    var result = Cameras.CENTER_CAM.getBestResult();
+
+    if (result.isPresent() && result.get().hasTargets()) {
+      for (var target : result.get().targets) {
+        if (target.fiducialId == id) {
+          return Optional.of(target);
+        }
+      }
+    }
+
+    return Optional.empty();
+  }
+
   /**
    * Generates the estimated robot pose. Returns empty if:
    * <ul>

@@ -108,7 +108,7 @@ public class SwerveSubsystem extends SubsystemBase {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot via
+    swerveDrive.setHeadingCorrection(true); // Heading correction should only be used while controlling the robot via
                                              // angle.
     swerveDrive.setCosineCompensator(false);// !SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for
                                             // simulations since it causes discrepancies not seen in real life.
@@ -762,6 +762,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Optional<PhotonTrackedTarget> getBestReefTargetForAlignment() {
     return vision.getBestReefTargetForAlignment();
+  }
+
+  public Optional<PhotonTrackedTarget> getTrackedTarget(int id) {
+    return vision.getTrackedTarget(id);
   }
 
   public Optional<Pose3d> getTagPose(Integer id) {

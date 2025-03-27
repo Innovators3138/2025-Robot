@@ -47,10 +47,11 @@ import frc.robot.commands.Drive.ReefPosition;
 import frc.robot.commands.Drive.RotateRobot;
 import frc.robot.commands.Drive.Stop;
 import frc.robot.commands.Drive.TargetAlignment;
-import frc.robot.commands.ReleaseGamepiece;
+import frc.robot.commands.ArmLevel;
 import frc.robot.commands.IntakeGamepiece;
 import frc.robot.commands.MoveElevator;
 import frc.robot.commands.MoveWrist;
+import frc.robot.commands.ReleaseGamepiece;
 import frc.robot.commands.MoveShoulder;
 import frc.robot.commands.RunGripper;
 import frc.robot.commands.MoveShoulderAndWrist;
@@ -65,8 +66,9 @@ import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.*;
 import java.io.File;
+import java.lang.annotation.Target;
+
 import swervelib.SwerveInputStream;
-import frc.robot.commands.Drive.ReverseReef;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 
 /**
@@ -163,7 +165,11 @@ public class RobotContainer {
     configureBindings();
 
     DriverStation.silenceJoystickConnectionWarning(true);
-    NamedCommands.registerCommand("test", Commands.print("I EXIST"));
+    NamedCommands.registerCommand("test", Commands.print("I EXIST")); 
+    NamedCommands.registerCommand("set_level_1", new SetToLevelOne(m_elevator, m_arm));
+    NamedCommands.registerCommand("bump_reef", new BumpReef(drivebase));
+    NamedCommands.registerCommand("release_gamepiece", new ReleaseGamepiece(m_GripperSubsystem, ArmLevel.One));
+    NamedCommands.registerCommand("reverse_reef", new ReverseReef(drivebase));
     m_chooser.setDefaultOption("Drive Forward", autoDefault);
     m_chooser.addOption("Do Nothing", autoDoNothing);
     m_chooser.addOption("Left Side L1", autoLeftSideL1);
@@ -292,14 +298,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(
-      new DriveToReefPosition(ReefPosition._6oClock, drivebase),
-      new SetToLevelOne(m_elevator, m_arm, true),
-      new AlignToTarget(TargetAlignment.Left, driverXbox, drivebase),
-      new BumpReef(drivebase),
-      new ReleaseGamepiece(m_GripperSubsystem),
-      new ReverseReef(drivebase)
-    );
+    // return drivebase.getAutonomousCommand("Score Level 1");
+    return Score(ReefPosition._6oClock, ArmLevel.Four, TargetAlignment.Left);
     // An example command will be run in autonomous
     // return drivebase.getAutonomousCommand("Left Side L");
     // return drivebase.getAutonomousCommand("Center L1");
@@ -375,5 +375,30 @@ public class RobotContainer {
           new AlignToTarget(TargetAlignment.Center, driverXbox, drivebase)
         )
       );
+  }
+
+  public Command Score(ReefPosition reefPosition, ArmLevel armLevel, TargetAlignment targetAlignment) {
+    return new SequentialCommandGroup(
+      new DriveToReefPosition(reefPosition, drivebase),
+      GetArmPositionCommand(armLevel),
+      new AlignToTarget(targetAlignment, driverXbox, drivebase),
+      new BumpReef(drivebase),
+      new ReleaseGamepiece(m_GripperSubsystem, armLevel),
+      new ReverseReef(drivebase),
+      GetArmPositionCommand(ArmLevel.One)
+    );
+  }
+
+  public Command GetArmPositionCommand(ArmLevel armLevel) {
+    switch (armLevel) {
+      case One:
+        return new SetToLevelOne(m_elevator, m_arm, true);
+      case Two:
+        return new SetToLevelTwo(m_elevator, m_arm, true);
+      case Three:
+        return new SetToLevelThree(m_elevator, m_arm, m_GripperSubsystem, true);
+      default:
+        return new SetToLevelFour(m_elevator, m_arm, m_GripperSubsystem, true);
+    }
   }
 }

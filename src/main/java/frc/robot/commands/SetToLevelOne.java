@@ -6,7 +6,6 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.arm.Arm;
 import static edu.wpi.first.units.Units.*;
 
-
 public class SetToLevelOne extends Command {
     private final ElevatorSubsystem m_elevatorSubsystem;
     private final Arm m_arm;

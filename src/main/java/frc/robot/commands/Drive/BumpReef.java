@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,9 +17,19 @@ public class BumpReef extends Command {
     private final AngularVelocity MAX_ANGULAR_VELOCITY = DegreesPerSecond.of(10);
     private final LinearVelocity BUMP_VELOCITY = MetersPerSecond.of(0.25);
     private final SwerveSubsystem m_swerveSubsystem;
-    private final PIDController m_headingController = new PIDController(0.001, 0, 0);
+    private final PIDController m_headingController = new PIDController(0.2, 0, 0);
     private int m_count;
     private double m_originalHeading;
+
+    private final DoublePublisher m_driftPublisher = NetworkTableInstance.getDefault()
+        .getTable("SmartDashboard")
+        .getDoubleTopic("vision/align/drift")
+        .publish();
+
+    private final DoublePublisher m_driftCorrectionPublisher = NetworkTableInstance.getDefault()
+        .getTable("SmartDashboard")
+        .getDoubleTopic("vision/align/driftCorrection")
+        .publish();
 
     public BumpReef(SwerveSubsystem swerveSubsystem) {
         m_swerveSubsystem = swerveSubsystem;
@@ -47,17 +59,21 @@ public class BumpReef extends Command {
             headingDrift = m_originalHeading - currentHeading;
         }
 
-        var angularVelocity = MathUtil.clamp(
+        m_driftPublisher.set(headingDrift);
+
+        var angularVelocity = -MathUtil.clamp(
             m_headingController.calculate(headingDrift),
             -MAX_ANGULAR_VELOCITY.in(DegreesPerSecond),
             MAX_ANGULAR_VELOCITY.in(DegreesPerSecond));
+
+        m_driftCorrectionPublisher.set(angularVelocity);
 
         m_swerveSubsystem.drive(
             new Translation2d(
                 BUMP_VELOCITY.in(MetersPerSecond),
                 0
             ),
-            -angularVelocity,
+            angularVelocity,
             false
         );
     }
@@ -72,6 +88,6 @@ public class BumpReef extends Command {
 
     @Override
     public boolean isFinished() {
-        return m_count > 100;
+        return m_count > 150;
     }
 }

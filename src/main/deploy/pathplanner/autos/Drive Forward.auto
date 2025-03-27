@@ -9,6 +9,12 @@
           "data": {
             "pathName": "Simple Drive Forward"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "test"
+          }
         }
       ]
     }
